@@ -129,7 +129,29 @@ public class Checks {
         if(value)
             return;
 
-        fail("Expected " + quote(name, "value") + "to be true");
+        fail("Expected" + quote(name, "value") + "to be true");
+    }
+
+    /**
+     * Assert that {@param value} is false.
+     *
+     * @param value the value that should be false
+     */
+    public static void assertFalse(boolean value) {
+        assertFalse(value, "");
+    }
+
+    /**
+     * Assert that {@param value} is false.
+     *
+     * @param value the value that should be false
+     * @param name  the name of the value that should have been false
+     */
+    public static void assertFalse(boolean value, String name) {
+        if(!value)
+            return;
+
+        fail("Expected" + quote(name, "value") + "to be false");
     }
 
     /**
@@ -205,7 +227,7 @@ public class Checks {
      * @param two the second value
      */
     public static void assertEquals(Object one, Object two) {
-        assertEquals(one, "first", two, "second");
+        assertEquals(one, "one", two, "two");
     }
 
     /**
@@ -217,17 +239,20 @@ public class Checks {
      * @param twoName the name of the second value
      */
     public static void assertEquals(Object one, String oneName, Object two, String twoName) {
-        if (Objects.equals(one, two))
+        if (one instanceof Number && two instanceof Number) {
+            if (Numbers.equal((Number) one, (Number) two))
+                return;
+        } else if (Objects.equals(one, two))  {
             return;
+        }
 
         if(one != null && two != null && one.getClass().isArray() && two.getClass().isArray()) {
             assertArraysEqual(one, oneName, two, twoName);
             return;
         }
 
-        fail("Expected " + quoteEquals(oneName, one) + " to equal " + quoteEquals(twoName, two));
+        fail("Expected" + quoteEquals(oneName, one) + "to equal" + quoteEquals(twoName, two));
     }
-
 
     /**
      * Assert that the contents of {@param one} are equal to the contents of {@param two}.
@@ -314,6 +339,15 @@ public class Checks {
         if (value != null)
             return;
         fail("Expected" + quote(name, "value") + "to be non-null");
+    }
+
+    /**
+     * Assert that running {@param runnable} throws an {@link AssertionFailure}.
+     *
+     * @param runnable the runnable that should throw the assertion failure
+     */
+    public static void assertFails(Runnable runnable) {
+        assertThrows(runnable, AssertionFailure.class);
     }
 
     /**
@@ -477,7 +511,7 @@ public class Checks {
      * @param twoName The name of the second value
      * @param epsilon The maximum allowable difference between {@param one} and {@param two}
      */
-    public static void assertEqual(Number one, String oneName, Number two, String twoName, Number epsilon) {
+    public static void assertEquals(Number one, String oneName, Number two, String twoName, Number epsilon) {
         if (Numbers.equal(one, two, epsilon))
             return;
 

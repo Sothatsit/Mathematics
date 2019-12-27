@@ -8,6 +8,13 @@ package net.paddyl.util;
 public class Num {
 
     /**
+     * @see NumberType#getDominantType(Number...)
+     */
+    public static NumberType<?> type(Number... numbers) {
+        return NumberType.getDominantType(numbers);
+    }
+
+    /**
      * @see Numbers#compare(Number, Number)
      */
     public static int cmp(Number one, Number two) {

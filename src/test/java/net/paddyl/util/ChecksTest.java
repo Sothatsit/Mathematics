@@ -15,7 +15,7 @@ public class ChecksTest {
 
         try {
             Checks.assertThrows(() -> {}, Checks.AssertionFailure.class);
-            throw new Checks.AssertionFailure("Expected assertThrows to fail as no exception was thrown");
+            throw new IllegalStateException("Expected assertThrows to fail as no exception was thrown");
         } catch (Checks.AssertionFailure failure) {
             // Expected
         }
@@ -24,7 +24,7 @@ public class ChecksTest {
             Checks.assertThrows(() -> {
                 throw new RuntimeException("testThrows");
             }, Checks.AssertionFailure.class);
-            throw new Checks.AssertionFailure("Expected assertThrows to fail as the wrong exception type was thrown");
+            throw new IllegalStateException("Expected assertThrows to fail as the wrong exception type was thrown");
         } catch (Checks.AssertionFailure failure) {
             // Expected
         }
