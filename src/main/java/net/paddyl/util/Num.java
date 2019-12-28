@@ -83,4 +83,11 @@ public class Num {
     public static Number add(Number one, Number two) {
         return Numbers.add(one, two);
     }
+
+    /**
+     * @see Numbers#absolute(Number)
+     */
+    public static Number abs(Number value) {
+        return Numbers.absolute(value);
+    }
 }

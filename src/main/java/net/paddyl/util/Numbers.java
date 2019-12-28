@@ -6,7 +6,6 @@ package net.paddyl.util;
  *
  * Note this is not efficient. It requires lookups
  * for type classes and boxing/unboxing primitives.
- * It should be used sparingly.
  *
  * @author Paddy Lamont
  */
@@ -57,24 +56,6 @@ public class Numbers {
     }
 
     /**
-     * Returns the absolute difference between {@param one} and {@param two}.
-     * Will promote the type of {@param one} and {@param two} to ensure
-     * there is no integer overflow.
-     * e.g. absDiff(int, int) may return long
-     */
-    public static Number absoluteDifference(Number one, Number two) {
-        NumberType<?> type = NumberType.getDominantType(one, two);
-
-        // Avoid integer overflow if possible
-        if (type.isInteger()) {
-            NumberType<?> higherPrecision = type.getNextHigherPrecisionType();
-            type = (higherPrecision != null ? higherPrecision : type);
-        }
-
-        return type.absolute(type.subtract(one, two));
-    }
-
-    /**
      * @return {@code true} if the difference between {@param one} and {@param two}
      *         is less than or equal to {@param epsilon}, else {@code false}.
      */
@@ -84,7 +65,7 @@ public class Numbers {
     }
 
     /**
-     * @return the value of {@param one} added to {@param two}.
+     * @return the sum of {@param one} and {@param two}.
      *         Does not avoid integer overflow.
      */
     public static Number add(Number one, Number two) {
@@ -97,5 +78,51 @@ public class Numbers {
      */
     public static Number subtract(Number one, Number two) {
         return NumberType.getDominantType(one, two).subtract(one, two);
+    }
+
+    private static NumberType<?> getExactAddSubtractType(Number... numbers) {
+        NumberType<?> type = NumberType.getDominantType(numbers);
+
+        if (type.isFloatingPoint())
+            return NumberType.BIG_DECIMAL;
+
+        NumberType<?> higherPrecision = type.getNextHigherPrecisionType();
+        return higherPrecision != null ? higherPrecision : type;
+    }
+
+    /**
+     * Returns the sum of {@param one} and {@param two}, avoiding integer overflow and floating point errors.
+     */
+    public static Number addExact(Number one, Number two) {
+        return getExactAddSubtractType(one, two).add(one, two);
+    }
+
+    /**
+     * Returns the value of {@param one} minus {@param two}, avoiding integer overflow and floating point errors.
+     */
+    public static Number subtractExact(Number one, Number two) {
+        return getExactAddSubtractType(one, two).subtract(one, two);
+    }
+
+    /**
+     * @return the absolute value of {@param value}, and avoids integer overflow.
+     */
+    public static Number absolute(Number value) {
+        NumberType<?> type = NumberType.get(value);
+
+        if (type.isInteger()) {
+            NumberType<?> higherPrecision = type.getNextHigherPrecisionType();
+            type = (higherPrecision != null ? higherPrecision : type);
+        }
+
+        return type.absolute(value);
+    }
+
+    /**
+     * Returns the absolute difference between {@param one} and {@param two}.
+     * Avoids integer overflow and floating point error by promoting types.
+     */
+    public static Number absoluteDifference(Number one, Number two) {
+        return absolute(subtractExact(one, two));
     }
 }

@@ -433,6 +433,16 @@ public class Checks {
      * Assert that {@param shouldBeLow} is less than {@param shouldBeHigh}.
      *
      * @param shouldBeLow  The number that should be lower
+     * @param shouldBeHigh The number that should be higher
+     */
+    public static void assertLessThan(Number shouldBeLow, Number shouldBeHigh) {
+        assertLessThan(shouldBeLow, "shouldBeLow", shouldBeHigh, "shouldBeHigh");
+    }
+
+    /**
+     * Assert that {@param shouldBeLow} is less than {@param shouldBeHigh}.
+     *
+     * @param shouldBeLow  The number that should be lower
      * @param lowName      The name of the low value
      * @param shouldBeHigh The number that should be higher
      * @param highName     The name of the high value
@@ -445,6 +455,16 @@ public class Checks {
             "Expected" + quote(lowName, "shouldBeLow") + "= " + shouldBeLow +
             " to be less than" + quote(highName, "shouldBeHigh") + "= " + shouldBeHigh
         );
+    }
+
+    /**
+     * Assert that {@param shouldBeLow} is less than or equal to {@param shouldBeHigh}.
+     *
+     * @param shouldBeLow  The number that should be lower
+     * @param shouldBeHigh The number that should be higher
+     */
+    public static void assertLessThanOrEqual(Number shouldBeLow, Number shouldBeHigh) {
+        assertLessThanOrEqual(shouldBeLow, "shouldBeLow", shouldBeHigh, "shouldBeHigh");
     }
 
     /**
@@ -469,12 +489,22 @@ public class Checks {
      * Assert that {@param shouldBeLow} is greater than {@param shouldBeHigh}.
      *
      * @param shouldBeHigh The number that should be higher
+     * @param shouldBeLow  The number that should be lower
+     */
+    public static void assertGreaterThan(Number shouldBeHigh, Number shouldBeLow) {
+        assertGreaterThan(shouldBeHigh, "shouldBeHigh", shouldBeLow, "shouldBeLow");
+    }
+
+    /**
+     * Assert that {@param shouldBeLow} is greater than {@param shouldBeHigh}.
+     *
+     * @param shouldBeHigh The number that should be higher
      * @param highName     The name of the high value
      * @param shouldBeLow  The number that should be lower
      * @param lowName      The name of the low value
      */
     public static void assertGreaterThan(Number shouldBeHigh, String highName, Number shouldBeLow, String lowName) {
-        if (Numbers.greaterThan(shouldBeLow, shouldBeHigh))
+        if (Numbers.greaterThan(shouldBeHigh, shouldBeLow))
             return;
 
         fail(
@@ -487,18 +517,40 @@ public class Checks {
      * Assert that {@param shouldBeLow} is greater than or equal to {@param shouldBeHigh}.
      *
      * @param shouldBeHigh The number that should be higher
+     * @param shouldBeLow  The number that should be lower
+     */
+    public static void assertGreaterThanOrEqual(Number shouldBeHigh, Number shouldBeLow) {
+        assertGreaterThanOrEqual(shouldBeHigh, "shouldBeHigh", shouldBeLow, "shouldBeLow");
+    }
+
+    /**
+     * Assert that {@param shouldBeLow} is greater than or equal to {@param shouldBeHigh}.
+     *
+     * @param shouldBeHigh The number that should be higher
      * @param highName     The name of the high value
      * @param shouldBeLow  The number that should be lower
      * @param lowName      The name of the low value
      */
     public static void assertGreaterThanOrEqual(Number shouldBeHigh, String highName, Number shouldBeLow, String lowName) {
-        if (Numbers.greaterThanOrEqual(shouldBeLow, shouldBeHigh))
+        if (Numbers.greaterThanOrEqual(shouldBeHigh, shouldBeLow))
             return;
 
         fail(
             "Expected" + quote(highName, "shouldBeHigh") + "= " + shouldBeHigh +
             " to be greater than or equal to" + quote(lowName, "shouldBeLow") + "= " + shouldBeLow
         );
+    }
+
+    /**
+     * Assert that the absolute difference between {@param one}
+     * and {@param two} is less than or equal to {@param epsilon}.
+     *
+     * @param one     The first value
+     * @param two     The second value
+     * @param epsilon The maximum allowable difference between {@param one} and {@param two}
+     */
+    public static void assertEquals(Number one, Number two, Number epsilon) {
+        assertEquals(one, "one", two, "two", epsilon);
     }
 
     /**

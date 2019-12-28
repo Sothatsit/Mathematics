@@ -31,11 +31,39 @@ public class NumbersTest {
     }
 
     @Test
+    public void testGetNextHigherPrecisionType() {
+        assertEquals(NumberType.SHORT, NumberType.BYTE.getNextHigherPrecisionType());
+        assertEquals(NumberType.INT, NumberType.SHORT.getNextHigherPrecisionType());
+        assertEquals(NumberType.LONG, NumberType.INT.getNextHigherPrecisionType());
+        assertEquals(NumberType.BIG_INT, NumberType.LONG.getNextHigherPrecisionType());
+        assertEquals(null, NumberType.BIG_INT.getNextHigherPrecisionType());
+
+        assertEquals(NumberType.DOUBLE, NumberType.FLOAT.getNextHigherPrecisionType());
+        assertEquals(NumberType.BIG_DECIMAL, NumberType.DOUBLE.getNextHigherPrecisionType());
+        assertEquals(null, NumberType.BIG_DECIMAL.getNextHigherPrecisionType());
+    }
+
+    @Test
+    public void testGetNextLowerPrecisionType() {
+        assertEquals(null, NumberType.BYTE.getNextLowerPrecisionType());
+        assertEquals(NumberType.BYTE, NumberType.SHORT.getNextLowerPrecisionType());
+        assertEquals(NumberType.SHORT, NumberType.INT.getNextLowerPrecisionType());
+        assertEquals(NumberType.INT, NumberType.LONG.getNextLowerPrecisionType());
+        assertEquals(NumberType.LONG, NumberType.BIG_INT.getNextLowerPrecisionType());
+
+        assertEquals(null, NumberType.FLOAT.getNextLowerPrecisionType());
+        assertEquals(NumberType.FLOAT, NumberType.DOUBLE.getNextLowerPrecisionType());
+        assertEquals(NumberType.DOUBLE, NumberType.BIG_DECIMAL.getNextLowerPrecisionType());
+    }
+
+    @Test
     public void testNumberTypeGetDominantType() {
         assertFails(() -> Num.type());
-        assertFails(() -> NumberType.getDominantType());
+        assertFails(() -> NumberType.getDominantType(new Number[0]));
         assertFails(() -> Num.type((Number[]) null));
         assertFails(() -> NumberType.getDominantType((Number[]) null));
+        assertFails(() -> NumberType.getDominantType(new NumberType[0]));
+        assertFails(() -> NumberType.getDominantType((NumberType[]) null));
 
         // One number
         testType(NumberType.BYTE,        (byte) 0);
@@ -182,12 +210,12 @@ public class NumbersTest {
         });
     }
 
-    private static class NumberCompareCase {
+    private static class NumberPair {
 
         public final Number one;
         public final Number two;
 
-        public NumberCompareCase(Number one, Number two) {
+        public NumberPair(Number one, Number two) {
             this.one = one;
             this.two = two;
         }
@@ -196,13 +224,13 @@ public class NumbersTest {
         public boolean equals(Object obj) {
             if (obj == null || !obj.getClass().equals(getClass()))
                 return false;
-            NumberCompareCase other = (NumberCompareCase) obj;
+            NumberPair other = (NumberPair) obj;
             return Objects.equals(one, other.one) && Objects.equals(two, other.two);
         }
     }
 
     /**
-     * Makes sure the test specific {@link NumberCompareCase#equals(Object)} correctly reports
+     * Makes sure the test specific {@link NumberPair#equals(Object)} correctly reports
      * two cases as distinct if the stored numbers are equal, but are stored as different number types.
      */
     @Test
@@ -212,12 +240,12 @@ public class NumbersTest {
         for (int ai = 0; ai < zeroes.length; ++ai) {
             for (int bi = 0; bi < zeroes.length; ++bi) {
 
-                NumberCompareCase case1 = new NumberCompareCase(zeroes[ai], zeroes[bi]);
+                NumberPair case1 = new NumberPair(zeroes[ai], zeroes[bi]);
 
                 for (int ci = 0; ci < zeroes.length; ++ci) {
                     for (int di = 0; di < zeroes.length; ++di) {
 
-                        NumberCompareCase case2 = new NumberCompareCase(zeroes[ci], zeroes[di]);
+                        NumberPair case2 = new NumberPair(zeroes[ci], zeroes[di]);
 
                         if (ai == ci && bi == di) {
                             assertTrue(case1.equals(case2));
@@ -230,74 +258,26 @@ public class NumbersTest {
         }
     }
 
-    public static final List<NumberCompareCase> EQUAL = new ArrayList<>();
-    public static final List<NumberCompareCase> LESS_THAN = new ArrayList<>();
+    private static List<Number> coerceToAllCompatible(Number value) {
+        List<Number> numbers = new ArrayList<>();
+        for (NumberType<?> type : NumberType.getAllCompatible(value)) {
+            numbers.add(type.coerce(value));
+        }
+        return numbers;
+    }
 
     /**
      * Promotes {@param one} and {@param two} to all possible pairs of alternative Number
      * representations (including the pair passed in), and adds them all to {@param list}.
      */
-    private static void addAllTypePairs(List<NumberCompareCase> list, Number one, Number two) {
-        NumberCompareCase compareCase = new NumberCompareCase(one, two);
-        if (list.contains(compareCase))
-            return;
+    private static void addAllTypePairs(List<NumberPair> list, Number one, Number two) {
+        List<Number> onesCoerced = coerceToAllCompatible(one);
+        List<Number> twosCoerced = coerceToAllCompatible(two);
 
-        list.add(compareCase);
-
-        if (one instanceof Byte) {
-            addAllTypePairs(list, one.shortValue(), two);
-            addAllTypePairs(list, one.floatValue(), two);
-        }
-
-        if (two instanceof Byte) {
-            addAllTypePairs(list, one, two.shortValue());
-            addAllTypePairs(list, one, two.floatValue());
-        }
-
-        if (one instanceof Short) {
-            addAllTypePairs(list, one.intValue(), two);
-            addAllTypePairs(list, one.floatValue(), two);
-        }
-
-        if (two instanceof Short) {
-            addAllTypePairs(list, one, two.intValue());
-            addAllTypePairs(list, one, two.floatValue());
-        }
-
-        if (one instanceof Integer) {
-            addAllTypePairs(list, one.longValue(), two);
-            addAllTypePairs(list, one.doubleValue(), two);
-        }
-
-        if (two instanceof Integer) {
-            addAllTypePairs(list, one, two.longValue());
-            addAllTypePairs(list, one, two.doubleValue());
-        }
-
-        if (one instanceof Long) {
-            addAllTypePairs(list, BigInteger.valueOf(one.longValue()), two);
-            addAllTypePairs(list, BigDecimal.valueOf(one.longValue()), two);
-        }
-
-        if (two instanceof Long) {
-            addAllTypePairs(list, one, BigInteger.valueOf(two.longValue()));
-            addAllTypePairs(list, one, BigDecimal.valueOf(two.longValue()));
-        }
-
-        if (one instanceof Float) {
-            addAllTypePairs(list, one.doubleValue(), two);
-        }
-
-        if (two instanceof Float) {
-            addAllTypePairs(list, one, two.doubleValue());
-        }
-
-        if (one instanceof Double) {
-            addAllTypePairs(list, BigDecimal.valueOf(one.doubleValue()), two);
-        }
-
-        if (two instanceof Double) {
-            addAllTypePairs(list, one, BigDecimal.valueOf(two.doubleValue()));
+        for (Number oneCoerced : onesCoerced) {
+            for (Number twoCoerced : twosCoerced) {
+                list.add(new NumberPair(oneCoerced, twoCoerced));
+            }
         }
     }
 
@@ -313,6 +293,8 @@ public class NumbersTest {
         addAllTypePairs(LESS_THAN, one, two);
     }
 
+    private static final List<NumberPair> EQUAL = new ArrayList<>();
+    private static final List<NumberPair> LESS_THAN = new ArrayList<>();
     static {
         addEqualCase((byte) 0);
         addEqualCase((byte) 27);
@@ -366,12 +348,12 @@ public class NumbersTest {
 
     @Test
     public void testCompare() {
-        for (NumberCompareCase equal : EQUAL) {
+        for (NumberPair equal : EQUAL) {
             assertTrue(Num.cmp(equal.one, equal.two) == 0);
             assertTrue(Numbers.compare(equal.one, equal.two) == 0);
         }
 
-        for (NumberCompareCase lessThan : LESS_THAN) {
+        for (NumberPair lessThan : LESS_THAN) {
             assertTrue(Num.cmp(lessThan.one, lessThan.two) < 0);
             assertTrue(Num.cmp(lessThan.two, lessThan.one) > 0);
             assertTrue(Numbers.compare(lessThan.one, lessThan.two) < 0);
@@ -381,7 +363,7 @@ public class NumbersTest {
 
     @Test
     public void testEqual() {
-        for (NumberCompareCase equal : EQUAL) {
+        for (NumberPair equal : EQUAL) {
             assertTrue(Num.eq(equal.one, equal.two));
             assertTrue(Numbers.equal(equal.one, equal.two));
         }
@@ -389,7 +371,7 @@ public class NumbersTest {
 
     @Test
     public void testLessThan() {
-        for (NumberCompareCase lessThan : LESS_THAN) {
+        for (NumberPair lessThan : LESS_THAN) {
             assertTrue(Num.lt(lessThan.one, lessThan.two));
             assertTrue(Numbers.lessThan(lessThan.one, lessThan.two));
         }
@@ -397,12 +379,12 @@ public class NumbersTest {
 
     @Test
     public void testLessThanOrEqual() {
-        for (NumberCompareCase equal : EQUAL) {
+        for (NumberPair equal : EQUAL) {
             assertTrue(Num.lte(equal.one, equal.two));
             assertTrue(Numbers.lessThanOrEqual(equal.one, equal.two));
         }
 
-        for (NumberCompareCase lessThan : LESS_THAN) {
+        for (NumberPair lessThan : LESS_THAN) {
             assertTrue(Num.lte(lessThan.one, lessThan.two));
             assertTrue(Numbers.lessThanOrEqual(lessThan.one, lessThan.two));
         }
@@ -410,7 +392,7 @@ public class NumbersTest {
 
     @Test
     public void testGreaterThan() {
-        for (NumberCompareCase lessThan : LESS_THAN) {
+        for (NumberPair lessThan : LESS_THAN) {
             assertTrue(Num.gt(lessThan.two, lessThan.one));
             assertTrue(Numbers.greaterThan(lessThan.two, lessThan.one));
         }
@@ -418,14 +400,67 @@ public class NumbersTest {
 
     @Test
     public void testGreaterThanOrEqual() {
-        for (NumberCompareCase equal : EQUAL) {
+        for (NumberPair equal : EQUAL) {
             assertTrue(Num.gte(equal.two, equal.one));
             assertTrue(Numbers.greaterThanOrEqual(equal.two, equal.one));
         }
 
-        for (NumberCompareCase lessThan : LESS_THAN) {
+        for (NumberPair lessThan : LESS_THAN) {
             assertTrue(Num.gte(lessThan.two, lessThan.one));
             assertTrue(Numbers.greaterThanOrEqual(lessThan.two, lessThan.one));
+        }
+    }
+
+    private static void addAbsoluteCase(Number value, Number absolute) {
+        addAllTypePairs(ABSOLUTE, value, absolute);
+    }
+
+    private static final List<NumberPair> ABSOLUTE = new ArrayList<>();
+    static {
+        addAbsoluteCase((byte) -1, (byte) 1);
+        addAbsoluteCase((byte) -7, (byte) 7);
+        addAbsoluteCase((byte) -121, (byte) 121);
+        addAbsoluteCase((short) -128, (short) 128);
+        addAbsoluteCase((short) -32111, (short) 32111);
+        addAbsoluteCase(-32768,  32768);
+        addAbsoluteCase(-2147483111, 2147483111);
+        addAbsoluteCase(-2147483648L, 2147483648L);
+        addAbsoluteCase(-9223372036854775111L, 9223372036854775111L);
+        addAbsoluteCase(-9223372036854775808L, new BigInteger("9223372036854775808"));
+        addAbsoluteCase(new BigInteger("-9223372036854775808123"), new BigInteger("9223372036854775808123"));
+    }
+
+    @Test
+    public void testAbsolute() {
+        for (NumberPair pair : ABSOLUTE) {
+            Number abs1 = Num.abs(pair.one);
+            Number abs2 = Numbers.absolute(pair.one);
+
+            assertEquals(abs1, pair.two);
+            assertEquals(abs2, pair.two);
+
+            assertGreaterThan(0, pair.one);
+            assertLessThan(0, abs1);
+            assertLessThan(0, abs2);
+
+            assertEquals(0, Numbers.add(pair.one, abs1));
+            assertEquals(0, Numbers.add(pair.one, abs2));
+
+            assertEquals(abs1, Num.abs(abs1));
+            assertEquals(abs1, Numbers.absolute(abs1));
+            assertEquals(abs2, Num.abs(abs2));
+            assertEquals(abs2, Numbers.absolute(abs2));
+        }
+
+        for (NumberType<?> type : NumberType.ALL) {
+            if (type.getMinValue() == null || type.getMaxValue() == null)
+                continue;
+
+            assertEquals(type.getMinValue(), Num.sub(0, Num.abs(type.getMinValue())));
+            assertEquals(type.getMinValue(), Numbers.subtract(0, Numbers.absolute(type.getMinValue())));
+
+            assertEquals(type.getMaxValue(), Num.abs(type.getMaxValue()));
+            assertEquals(type.getMaxValue(), Numbers.absolute(type.getMaxValue()));
         }
     }
 }
