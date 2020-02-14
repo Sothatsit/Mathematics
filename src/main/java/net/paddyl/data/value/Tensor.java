@@ -121,18 +121,4 @@ public class Tensor<T extends Value> extends Value<Tensor<T>> {
         }
         return builder.toString();
     }
-
-    public static void main(String[] arg) {
-        Tensor<IntValue> tensor = new Tensor<>(IntValue.class, new int[] {4, 3, 2});
-
-        for(int i=0; i < 2; ++i) {
-            for(int j=0; j < 3; ++j) {
-                for(int k=0; k < 4; ++k) {
-                    tensor.set(new int[] {k, j, i}, new IntValue(6 * k + 2 * j + i));
-                }
-            }
-        }
-
-        System.out.println(tensor.toString());
-    }
 }

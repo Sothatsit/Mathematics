@@ -1,7 +1,6 @@
 package net.paddyl.data.value;
 
 import net.paddyl.util.Cast;
-import net.paddyl.util.Checks;
 
 /**
  * An immutable value used in an expression.
@@ -10,33 +9,8 @@ import net.paddyl.util.Checks;
  */
 public abstract class Value<K> {
 
-    public double asDouble() {
-        throw new UnsupportedOperationException(getClass().getSimpleName() + " cannot be represented as a double");
-    }
-
-    public float asFloat() {
-        throw new UnsupportedOperationException(getClass().getSimpleName() + " cannot be represented as a float");
-    }
-
-    public int asInt() {
-        throw new UnsupportedOperationException(getClass().getSimpleName() + " cannot be represented as an int");
-    }
-
-    public long asLong() {
-        throw new UnsupportedOperationException(getClass().getSimpleName() + " cannot be represented as a long");
-    }
-
-    public Tensor asTensor() {
-        throw new UnsupportedOperationException(getClass().getSimpleName() + " cannot be represented as a tensor");
-    }
-
-    public <T extends Value> Tensor<T> asTensor(Class<T> elementType) {
-        Tensor tensor = asTensor();
-
-        Checks.assertThat(tensor.getElementType().equals(elementType),
-                "this is not a tensor of element type " + elementType);
-
-        return Cast.cast(tensor);
+    public <T> T as(Class<T> clazz) {
+        throw new UnsupportedOperationException(getClass().getSimpleName() + " cannot be represented as a " + clazz);
     }
 
     public K value() {

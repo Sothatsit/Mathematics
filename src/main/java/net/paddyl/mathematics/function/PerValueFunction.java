@@ -9,18 +9,20 @@ import net.paddyl.util.Checks;
  *
  * @author Paddy Lamont
  */
-public class PerValueFunction implements Function {
+public class PerValueFunction extends Function {
 
     private final Function function;
 
     public PerValueFunction(Function function) {
+        super(null);
+
         Checks.assertNonNull(function, "function");
 
         this.function = function;
     }
 
     @Override
-    public Value apply(Value... values) {
+    public Object applyImpl(Object... values) {
         return null;
 
         /*
