@@ -2,8 +2,8 @@ package net.paddyl.constraints;
 
 import static net.paddyl.constraints.LongRange.*;
 import static net.paddyl.constraints.ConstConstraint.*;
+import static org.junit.Assert.*;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -91,6 +91,8 @@ public class ConstConstraintTests {
             new MultiTestCase(EMPTY, gte(5), gt(10), gt(15)).and(EMPTY).or(EMPTY),
             new MultiTestCase(EMPTY, gt(5), gte(10), gte(15)).and(EMPTY).or(EMPTY),
             new MultiTestCase(EMPTY, gte(5), gte(10), gt(15)).and(EMPTY).or(EMPTY),
+
+            // TODO : Test cases with different input ranges
     };
 
     @Test
@@ -98,7 +100,7 @@ public class ConstConstraintTests {
         for (CompTestCase testCase : compTestCases) {
             ConstConstraint constraint = ConstConstraint.gte(testCase.value);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
-            Assert.assertEquals(testCase.original + " gte " + testCase.value, testCase.gte, constraintReduced);
+            assertEquals(testCase.original + " gte " + testCase.value, testCase.gte, constraintReduced);
         }
     }
 
@@ -107,7 +109,7 @@ public class ConstConstraintTests {
         for (CompTestCase testCase : compTestCases) {
             ConstConstraint constraint = ConstConstraint.gt(testCase.value);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
-            Assert.assertEquals(testCase.original + " gt " + testCase.value, testCase.gt, constraintReduced);
+            assertEquals(testCase.original + " gt " + testCase.value, testCase.gt, constraintReduced);
         }
     }
 
@@ -116,7 +118,7 @@ public class ConstConstraintTests {
         for (CompTestCase testCase : compTestCases) {
             ConstConstraint constraint = ConstConstraint.lte(testCase.value);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
-            Assert.assertEquals(testCase.original + " lte " + testCase.value, testCase.lte, constraintReduced);
+            assertEquals(testCase.original + " lte " + testCase.value, testCase.lte, constraintReduced);
         }
     }
 
@@ -125,7 +127,7 @@ public class ConstConstraintTests {
         for (CompTestCase testCase : compTestCases) {
             ConstConstraint constraint = ConstConstraint.lt(testCase.value);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
-            Assert.assertEquals(testCase.original + " lt " + testCase.value, testCase.lt, constraintReduced);
+            assertEquals(testCase.original + " lt " + testCase.value, testCase.lt, constraintReduced);
         }
     }
 
@@ -134,7 +136,7 @@ public class ConstConstraintTests {
         for (CompTestCase testCase : compTestCases) {
             ConstConstraint constraint = ConstConstraint.eq(testCase.value);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
-            Assert.assertEquals(testCase.original + " eq " + testCase.value, testCase.eq, constraintReduced);
+            assertEquals(testCase.original + " eq " + testCase.value, testCase.eq, constraintReduced);
         }
     }
 
@@ -144,7 +146,7 @@ public class ConstConstraintTests {
             ConstConstraint constraint = ConstConstraint.and(testCase.constraints);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
             String desc = "and " + Arrays.asList(testCase.constraints) + " of " + testCase.original;
-            Assert.assertEquals(desc, testCase.and, constraintReduced);
+            assertEquals(desc, testCase.and, constraintReduced);
         }
     }
 
@@ -154,7 +156,43 @@ public class ConstConstraintTests {
             ConstConstraint constraint = ConstConstraint.or(testCase.constraints);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
             String desc = "or " + Arrays.asList(testCase.constraints) + " of " + testCase.original;
-            Assert.assertEquals(desc, testCase.or, constraintReduced);
+            assertEquals(desc, testCase.or, constraintReduced);
+        }
+    }
+
+    @Test
+    public void testDomainChange() {
+        ConstOperator add1 = ConstOperator.add(1);
+        ConstOperator sub1 = ConstOperator.add(-1);
+
+        { // x + 1 == 2
+            ConstConstraint constraint = domain(add1, eq(2));
+            assertEquals(single(1), constraint.bruteReduce(ALL));
+        }
+
+        { // x - 1 == 2
+            ConstConstraint constraint = domain(sub1, eq(2));
+            assertEquals(single(3), constraint.bruteReduce(ALL));
+        }
+
+        { // x + 1 >= 3
+            ConstConstraint constraint = domain(add1, gte(3));
+            assertEquals(of(2, MAX - 1), constraint.bruteReduce(ALL));
+        }
+
+        { // x - 1 <= 3
+            ConstConstraint constraint = domain(sub1, lte(3));
+            assertEquals(of(MIN + 1, 4), constraint.bruteReduce(ALL));
+        }
+
+        { // x + 1 >= 0 && x - 1 <= 0
+            ConstConstraint constraint = and(domain(add1, gte(0)), domain(sub1, lte(0)));
+            assertEquals(of(-1, 1), constraint.bruteReduce(ALL));
+        }
+
+        { // (x + 1 >= -5 && x - 1 <= 5) || x - 1 < 0
+            ConstConstraint constraint = or(and(domain(add1, gte(-5)), domain(sub1, lte(5))), domain(sub1, lt(0)));
+            assertEquals(of(MIN + 1, 6), constraint.bruteReduce(ALL));
         }
     }
 

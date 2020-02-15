@@ -68,4 +68,11 @@ public interface ConstConstraint {
     public static ConstConstraint or(ConstConstraint... constraints) {
         return new CompoundConstConstraint.OrConstConstraint(constraints);
     }
+
+    /**
+     * Change the domain of the input to the constraint.
+     */
+    public static ConstConstraint domain(ConstOperator operator, ConstConstraint constraint) {
+        return new DomainChangeConstConstraint(operator, constraint);
+    }
 }
