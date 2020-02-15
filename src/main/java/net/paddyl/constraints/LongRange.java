@@ -32,6 +32,36 @@ public class LongRange {
         return min <= value && value <= max;
     }
 
+    public boolean isUnboundedLow() {
+        return min == Long.MIN_VALUE;
+    }
+
+    public boolean isUnboundedHigh() {
+        return max == Long.MAX_VALUE;
+    }
+
+    public LongRange union(LongRange other) {
+        if (isEmpty())
+            return other;
+        if (other.isEmpty())
+            return this;
+
+        return new LongRange(
+                Math.min(min, other.min),
+                Math.max(max, other.max)
+        );
+    }
+
+    public LongRange intersection(LongRange other) {
+        if (isEmpty() || other.isEmpty() || max < other.min || min > other.max)
+            return EMPTY;
+
+        return new LongRange(
+                Math.max(min, other.min),
+                Math.min(max, other.max)
+        );
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null || !getClass().equals(obj.getClass()))
@@ -51,6 +81,12 @@ public class LongRange {
             return "LongRange{<empty>}";
         if (min == max)
             return "LongRange{" + min + "}";
+        if (isUnboundedLow() && isUnboundedHigh())
+            return "LongRange{ALL}";
+        if (isUnboundedLow())
+            return "LongRange{ -> " + max + "}";
+        if (isUnboundedHigh())
+            return "LongRange{" + min + " -> }";
         return "LongRange{" + min + " -> " + max + "}";
     }
 
@@ -74,5 +110,23 @@ public class LongRange {
      */
     public static LongRange above(long value) {
         return new LongRange(value, Long.MAX_VALUE);
+    }
+
+    /**
+     * Below {@param value} exclusive.
+     */
+    public static LongRange belowNotIncl(long value) {
+        if (value == Long.MIN_VALUE)
+            return EMPTY;
+        return new LongRange(Long.MIN_VALUE, value - 1);
+    }
+
+    /**
+     * Above {@param value} exclusive.
+     */
+    public static LongRange aboveNotIncl(long value) {
+        if (value == Long.MAX_VALUE)
+            return EMPTY;
+        return new LongRange(value + 1, Long.MAX_VALUE);
     }
 }

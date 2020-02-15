@@ -3,12 +3,19 @@ package net.paddyl.constraints;
 /**
  * Contains the basic comparison with constant constraints.
  */
-public abstract class ComparisonConstConstraint implements ConstConstraint {
+public class ComparisonConstConstraint implements ConstConstraint {
 
     public final long value;
+    public final LongRange validRange;
 
-    public ComparisonConstConstraint(long value) {
+    private ComparisonConstConstraint(long value, LongRange validRange) {
         this.value = value;
+        this.validRange = validRange;
+    }
+
+    @Override
+    public LongRange tryReduce(LongRange range) {
+        return range.intersection(validRange);
     }
 
     /**
@@ -17,16 +24,12 @@ public abstract class ComparisonConstConstraint implements ConstConstraint {
     public static class GTEConstConstraint extends ComparisonConstConstraint {
 
         public GTEConstConstraint(long minValue) {
-            super(minValue);
+            super(minValue, LongRange.above(minValue));
         }
 
         @Override
-        public LongRange tryReduce(LongRange range) {
-            if (range.max < value)
-                return LongRange.EMPTY;
-            if (range.min >= value)
-                return range;
-            return new LongRange(value, range.max);
+        public String toString() {
+            return ">= " + value;
         }
     }
 
@@ -36,16 +39,12 @@ public abstract class ComparisonConstConstraint implements ConstConstraint {
     public static class GTConstConstraint extends ComparisonConstConstraint {
 
         public GTConstConstraint(long minValue) {
-            super(minValue);
+            super(minValue, LongRange.aboveNotIncl(minValue));
         }
 
         @Override
-        public LongRange tryReduce(LongRange range) {
-            if (range.max <= value)
-                return LongRange.EMPTY;
-            if (range.min > value)
-                return range;
-            return new LongRange(value + 1, range.max);
+        public String toString() {
+            return "> " + value;
         }
     }
 
@@ -55,16 +54,12 @@ public abstract class ComparisonConstConstraint implements ConstConstraint {
     public static class LTEConstConstraint extends ComparisonConstConstraint {
 
         public LTEConstConstraint(long maxValue) {
-            super(maxValue);
+            super(maxValue, LongRange.below(maxValue));
         }
 
         @Override
-        public LongRange tryReduce(LongRange range) {
-            if (range.min > value)
-                return LongRange.EMPTY;
-            if (range.max <= value)
-                return range;
-            return new LongRange(range.min, value);
+        public String toString() {
+            return "<= " + value;
         }
     }
 
@@ -74,16 +69,12 @@ public abstract class ComparisonConstConstraint implements ConstConstraint {
     public static class LTConstConstraint extends ComparisonConstConstraint {
 
         public LTConstConstraint(long maxValue) {
-            super(maxValue);
+            super(maxValue, LongRange.belowNotIncl(maxValue));
         }
 
         @Override
-        public LongRange tryReduce(LongRange range) {
-            if (range.min >= value)
-                return LongRange.EMPTY;
-            if (range.max < value)
-                return range;
-            return new LongRange(range.min, value - 1);
+        public String toString() {
+            return "< " + value;
         }
     }
 
@@ -93,12 +84,12 @@ public abstract class ComparisonConstConstraint implements ConstConstraint {
     public static class EqualsConstConstraint extends ComparisonConstConstraint {
 
         public EqualsConstConstraint(long value) {
-            super(value);
+            super(value, LongRange.single(value));
         }
 
         @Override
-        public LongRange tryReduce(LongRange range) {
-            return range.contains(value) ? LongRange.single(value) : LongRange.EMPTY;
+        public String toString() {
+            return "== " + value;
         }
     }
 }

@@ -54,4 +54,18 @@ public interface ConstConstraint {
     public static ConstConstraint eq(long value) {
         return new ComparisonConstConstraint.EqualsConstConstraint(value);
     }
+
+    /**
+     * And. constraint1 && constraint2 && ... && constraintN.
+     */
+    public static ConstConstraint and(ConstConstraint... constraints) {
+        return new CompoundConstConstraint.AndConstConstraint(constraints);
+    }
+
+    /**
+     * Or. constraint1 || constraint2 || ... || constraintN.
+     */
+    public static ConstConstraint or(ConstConstraint... constraints) {
+        return new CompoundConstConstraint.OrConstConstraint(constraints);
+    }
 }
