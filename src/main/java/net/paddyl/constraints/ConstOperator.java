@@ -1,35 +1,35 @@
 package net.paddyl.constraints;
 
+import net.paddyl.constraints.set.ValueSet;
+
 /**
  * An operation on a single range.
  */
-public interface ConstOperator {
-
-    public static final ConstOperator IDENTITY = new ChainedConstOperator();
+public interface ConstOperator<S extends ValueSet<S, V>, V> {
 
     /**
      * Apply the operation.
      */
-    public LongRange forward(LongRange range);
+    public S forward(S range);
 
     /**
      * Reverse the operation.
      */
-    public LongRange backward(LongRange range);
+    public S backward(S range);
 
     /**
      * @return the inverse operation.
      */
-    public default ConstOperator inverse() {
-        ConstOperator original = this;
-        return new ConstOperator() {
+    public default ConstOperator<S, V> inverse() {
+        ConstOperator<S, V> original = this;
+        return new ConstOperator<S, V>() {
             @Override
-            public LongRange forward(LongRange range) {
+            public S forward(S range) {
                 return original.backward(range);
             }
 
             @Override
-            public LongRange backward(LongRange range) {
+            public S backward(S range) {
                 return original.forward(range);
             }
 
@@ -38,12 +38,5 @@ public interface ConstOperator {
                 return "inverse{" + original.toString() + "}";
             }
         };
-    }
-
-    /**
-     * Add. +.
-     */
-    public static ConstOperator add(long value) {
-        return new ArithmeticConstOperator.AddConstOperator(value);
     }
 }

@@ -1,30 +1,35 @@
 package net.paddyl.constraints;
 
+import net.paddyl.constraints.set.ValueSet;
+import net.paddyl.constraints.set.ValueSetFactory;
+
 /**
  * Contains the basic comparison with constant constraints.
  */
-public class ComparisonConstConstraint implements ConstConstraint {
+public class ComparisonConstConstraint<S extends ValueSet<S, V>, V> implements ConstConstraint<S, V> {
 
-    public final long value;
-    public final LongRange validRange;
+    protected final ValueSetFactory<S, V> factory;
+    protected final V value;
+    protected final S validRange;
 
-    private ComparisonConstConstraint(long value, LongRange validRange) {
+    private ComparisonConstConstraint(ValueSetFactory<S, V> factory, V value, S validRange) {
+        this.factory = factory;
         this.value = value;
         this.validRange = validRange;
     }
 
     @Override
-    public LongRange tryReduce(LongRange range) {
-        return range.intersection(validRange);
+    public S tryReduce(S range) {
+        return factory.intersection(range, validRange);
     }
 
     /**
      * range >= minValue.
      */
-    public static class GTEConstConstraint extends ComparisonConstConstraint {
+    public static class GTEConstConstraint<S extends ValueSet<S, V>, V> extends ComparisonConstConstraint<S, V> {
 
-        public GTEConstConstraint(long minValue) {
-            super(minValue, LongRange.above(minValue));
+        public GTEConstConstraint(ValueSetFactory<S, V> factory, V minValue) {
+            super(factory, minValue, factory.aboveIncl(minValue));
         }
 
         @Override
@@ -36,10 +41,10 @@ public class ComparisonConstConstraint implements ConstConstraint {
     /**
      * range > minValue.
      */
-    public static class GTConstConstraint extends ComparisonConstConstraint {
+    public static class GTConstConstraint<S extends ValueSet<S, V>, V> extends ComparisonConstConstraint<S, V> {
 
-        public GTConstConstraint(long minValue) {
-            super(minValue, LongRange.aboveNotIncl(minValue));
+        public GTConstConstraint(ValueSetFactory<S, V> factory, V minValue) {
+            super(factory, minValue, factory.above(minValue));
         }
 
         @Override
@@ -51,10 +56,10 @@ public class ComparisonConstConstraint implements ConstConstraint {
     /**
      * range <= maxValue.
      */
-    public static class LTEConstConstraint extends ComparisonConstConstraint {
+    public static class LTEConstConstraint<S extends ValueSet<S, V>, V> extends ComparisonConstConstraint<S, V> {
 
-        public LTEConstConstraint(long maxValue) {
-            super(maxValue, LongRange.below(maxValue));
+        public LTEConstConstraint(ValueSetFactory<S, V> factory, V maxValue) {
+            super(factory, maxValue, factory.belowIncl(maxValue));
         }
 
         @Override
@@ -66,10 +71,10 @@ public class ComparisonConstConstraint implements ConstConstraint {
     /**
      * range < maxValue.
      */
-    public static class LTConstConstraint extends ComparisonConstConstraint {
+    public static class LTConstConstraint<S extends ValueSet<S, V>, V> extends ComparisonConstConstraint<S, V> {
 
-        public LTConstConstraint(long maxValue) {
-            super(maxValue, LongRange.belowNotIncl(maxValue));
+        public LTConstConstraint(ValueSetFactory<S, V> factory, V maxValue) {
+            super(factory, maxValue, factory.below(maxValue));
         }
 
         @Override
@@ -81,10 +86,10 @@ public class ComparisonConstConstraint implements ConstConstraint {
     /**
      * range == value.
      */
-    public static class EqualsConstConstraint extends ComparisonConstConstraint {
+    public static class EqualsConstConstraint<S extends ValueSet<S, V>, V> extends ComparisonConstConstraint<S, V> {
 
-        public EqualsConstConstraint(long value) {
-            super(value, LongRange.single(value));
+        public EqualsConstConstraint(ValueSetFactory<S, V> factory, V value) {
+            super(factory, value, factory.single(value));
         }
 
         @Override

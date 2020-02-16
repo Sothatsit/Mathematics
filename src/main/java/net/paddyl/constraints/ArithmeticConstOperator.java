@@ -1,54 +1,55 @@
 package net.paddyl.constraints;
 
+import net.paddyl.constraints.set.ValueSet;
+import net.paddyl.constraints.set.ValueSetFactory;
+import net.paddyl.util.Cast;
+import net.paddyl.util.Num;
+import net.paddyl.util.NumberType;
+
 /**
  * Basic arithmetic const operator.
  */
-public abstract class ArithmeticConstOperator implements ConstOperator {
+public abstract class ArithmeticConstOperator<S extends ValueSet<S, V>, V> implements ConstOperator<S, V> {
 
-    protected final long value;
+    protected final ValueSetFactory<S, V> factory;
+    protected final V value;
 
-    public ArithmeticConstOperator(long value) {
+    public ArithmeticConstOperator(ValueSetFactory<S, V> factory, V value) {
+        this.factory = factory;
         this.value = value;
     }
 
     /**
      * range + value.
      */
-    public static class AddConstOperator extends ArithmeticConstOperator {
+    public static class AddConstOperator<S extends ValueSet<S, V>, V> extends ArithmeticConstOperator<S, V> {
 
-        public AddConstOperator(long value) {
-            super(value);
+        private final NumberType type;
+        private final V negatedValue;
+
+        public AddConstOperator(ValueSetFactory<S, V> factory, V value) {
+            super(factory, value);
+
+            if (!(value instanceof Number))
+                throw new UnsupportedOperationException();
+
+            this.type = Cast.cast(Num.type((Number) value));
+            this.negatedValue = Cast.cast(type.subtract(0, (Number) value));
         }
 
         @Override
-        public LongRange forward(LongRange range) {
-            if (value == 0)
-                return range;
-
-            // Check for overflow
-            if (value > 0) {
-                long maxNoOverflow = Long.MAX_VALUE - value;
-                if (range.min > maxNoOverflow || range.max > maxNoOverflow)
-                    return LongRange.ALL;
-            } else {
-                long minNoOverflow = Long.MIN_VALUE - value;
-                if (range.min < minNoOverflow || range.max < minNoOverflow)
-                    return LongRange.ALL;
-            }
-
-            return new LongRange(range.min + value, range.max + value);
+        public S forward(S range) {
+            return factory.shift(range, value);
         }
 
         @Override
-        public LongRange backward(LongRange range) {
-            return new LongRange(range.min - value, range.max - value);
+        public S backward(S range) {
+            return factory.shift(range, negatedValue);
         }
 
         @Override
         public String toString() {
-            if (value < 0)
-                return "- " + Long.toString(value).substring(1);
-            return "+ " + value;
+            return type.compare((Number) value, 0) < 0 ? "- " + negatedValue : "+ " + value;
         }
     }
 }

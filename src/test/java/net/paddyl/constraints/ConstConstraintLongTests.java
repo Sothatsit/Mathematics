@@ -1,19 +1,21 @@
 package net.paddyl.constraints;
 
-import static net.paddyl.constraints.LongRange.*;
-import static net.paddyl.constraints.ConstConstraint.*;
+import static net.paddyl.constraints.set.LongRange.*;
 import static org.junit.Assert.*;
 
+import net.paddyl.constraints.set.LongRange;
+import net.paddyl.constraints.set.LongRangeFactory;
 import org.junit.Test;
 
 import java.util.Arrays;
 
-public class ConstConstraintTests {
+public class ConstConstraintLongTests {
 
-    private static final long MAX = Long.MAX_VALUE;
-    private static final long MIN = Long.MIN_VALUE;
+    private final LongRangeFactory factory = new LongRangeFactory();
+    private final long MAX = Long.MAX_VALUE;
+    private final long MIN = Long.MIN_VALUE;
 
-    private static final CompTestCase[] compTestCases = {
+    private final CompTestCase[] compTestCases = {
             new CompTestCase(ALL, 5).gte(above(5)).gt(above(6)).lte(below(5)).lt(below(4)).eq(single(5)),
             new CompTestCase(ALL, 0).gte(above(0)).gt(above(1)).lte(below(0)).lt(below(-1)).eq(single(0)),
             new CompTestCase(ALL, -5).gte(above(-5)).gt(above(-4)).lte(below(-5)).lt(below(-6)).eq(single(-5)),
@@ -39,7 +41,7 @@ public class ConstConstraintTests {
             new CompTestCase(of(0, 5), MIN).gte(of(0, 5)).gt(of(0, 5)).lte(EMPTY).lt(EMPTY).eq(EMPTY),
     };
 
-    private static final MultiTestCase[] multiTestCases = {
+    private final MultiTestCase[] multiTestCases = {
             new MultiTestCase(ALL, eq(5)).and(single(5)).or(single(5)),
             new MultiTestCase(ALL, gte(5)).and(above(5)).or(above(5)),
             new MultiTestCase(ALL, gt(5)).and(aboveNotIncl(5)).or(aboveNotIncl(5)),
@@ -98,7 +100,7 @@ public class ConstConstraintTests {
     @Test
     public void testGTE() {
         for (CompTestCase testCase : compTestCases) {
-            ConstConstraint constraint = ConstConstraint.gte(testCase.value);
+            ConstConstraint<LongRange, Long> constraint = gte(testCase.value);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
             assertEquals(testCase.original + " gte " + testCase.value, testCase.gte, constraintReduced);
         }
@@ -107,7 +109,7 @@ public class ConstConstraintTests {
     @Test
     public void testGT() {
         for (CompTestCase testCase : compTestCases) {
-            ConstConstraint constraint = ConstConstraint.gt(testCase.value);
+            ConstConstraint<LongRange, Long> constraint = gt(testCase.value);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
             assertEquals(testCase.original + " gt " + testCase.value, testCase.gt, constraintReduced);
         }
@@ -116,7 +118,7 @@ public class ConstConstraintTests {
     @Test
     public void testLTE() {
         for (CompTestCase testCase : compTestCases) {
-            ConstConstraint constraint = ConstConstraint.lte(testCase.value);
+            ConstConstraint<LongRange, Long> constraint = lte(testCase.value);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
             assertEquals(testCase.original + " lte " + testCase.value, testCase.lte, constraintReduced);
         }
@@ -125,7 +127,7 @@ public class ConstConstraintTests {
     @Test
     public void testLT() {
         for (CompTestCase testCase : compTestCases) {
-            ConstConstraint constraint = ConstConstraint.lt(testCase.value);
+            ConstConstraint<LongRange, Long> constraint = lt(testCase.value);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
             assertEquals(testCase.original + " lt " + testCase.value, testCase.lt, constraintReduced);
         }
@@ -134,7 +136,7 @@ public class ConstConstraintTests {
     @Test
     public void testEq() {
         for (CompTestCase testCase : compTestCases) {
-            ConstConstraint constraint = ConstConstraint.eq(testCase.value);
+            ConstConstraint<LongRange, Long> constraint = eq(testCase.value);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
             assertEquals(testCase.original + " eq " + testCase.value, testCase.eq, constraintReduced);
         }
@@ -143,7 +145,7 @@ public class ConstConstraintTests {
     @Test
     public void testAnd() {
         for (MultiTestCase testCase : multiTestCases) {
-            ConstConstraint constraint = ConstConstraint.and(testCase.constraints);
+            ConstConstraint<LongRange, Long> constraint = and(testCase.constraints);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
             String desc = "and " + Arrays.asList(testCase.constraints) + " of " + testCase.original;
             assertEquals(desc, testCase.and, constraintReduced);
@@ -153,7 +155,7 @@ public class ConstConstraintTests {
     @Test
     public void testOr() {
         for (MultiTestCase testCase : multiTestCases) {
-            ConstConstraint constraint = ConstConstraint.or(testCase.constraints);
+            ConstConstraint<LongRange, Long> constraint = or(testCase.constraints);
             LongRange constraintReduced = constraint.bruteReduce(testCase.original);
             String desc = "or " + Arrays.asList(testCase.constraints) + " of " + testCase.original;
             assertEquals(desc, testCase.or, constraintReduced);
@@ -162,36 +164,36 @@ public class ConstConstraintTests {
 
     @Test
     public void testDomainChange() {
-        ConstOperator add1 = ConstOperator.add(1);
-        ConstOperator sub1 = ConstOperator.add(-1);
+        ConstOperator<LongRange, Long> add1 = add(1);
+        ConstOperator<LongRange, Long> sub1 = add(-1);
 
         { // x + 1 == 2
-            ConstConstraint constraint = domain(add1, eq(2));
+            ConstConstraint<LongRange, Long> constraint = domain(add1, eq(2));
             assertEquals(single(1), constraint.bruteReduce(ALL));
         }
 
         { // x - 1 == 2
-            ConstConstraint constraint = domain(sub1, eq(2));
+            ConstConstraint<LongRange, Long> constraint = domain(sub1, eq(2));
             assertEquals(single(3), constraint.bruteReduce(ALL));
         }
 
         { // x + 1 >= 3
-            ConstConstraint constraint = domain(add1, gte(3));
+            ConstConstraint<LongRange, Long> constraint = domain(add1, gte(3));
             assertEquals(of(2, MAX - 1), constraint.bruteReduce(ALL));
         }
 
         { // x - 1 <= 3
-            ConstConstraint constraint = domain(sub1, lte(3));
+            ConstConstraint<LongRange, Long> constraint = domain(sub1, lte(3));
             assertEquals(of(MIN + 1, 4), constraint.bruteReduce(ALL));
         }
 
         { // x + 1 >= 0 && x - 1 <= 0
-            ConstConstraint constraint = and(domain(add1, gte(0)), domain(sub1, lte(0)));
+            ConstConstraint<LongRange, Long> constraint = and(domain(add1, gte(0)), domain(sub1, lte(0)));
             assertEquals(of(-1, 1), constraint.bruteReduce(ALL));
         }
 
         { // (x + 1 >= -5 && x - 1 <= 5) || x - 1 < 0
-            ConstConstraint constraint = or(and(domain(add1, gte(-5)), domain(sub1, lte(5))), domain(sub1, lt(0)));
+            ConstConstraint<LongRange, Long> constraint = or(and(domain(add1, gte(-5)), domain(sub1, lte(5))), domain(sub1, lt(0)));
             assertEquals(of(MIN + 1, 6), constraint.bruteReduce(ALL));
         }
     }
@@ -212,6 +214,8 @@ public class ConstConstraintTests {
 
             this.original = original;
             this.value = value;
+
+            new Exception(original + " - " + value).printStackTrace(System.out);
         }
 
         public CompTestCase gte(LongRange expected) {
@@ -242,12 +246,13 @@ public class ConstConstraintTests {
 
     private static class MultiTestCase {
         private final LongRange original;
-        private final ConstConstraint[] constraints;
+        private final ConstConstraint<LongRange, Long>[] constraints;
 
         private LongRange and;
         private LongRange or;
 
-        private MultiTestCase(LongRange original, ConstConstraint... constraints) {
+        @SafeVarargs
+        private MultiTestCase(LongRange original, ConstConstraint<LongRange, Long>... constraints) {
             this.original = original;
             this.constraints = constraints;
         }
@@ -261,5 +266,70 @@ public class ConstConstraintTests {
             this.or = expected;
             return this;
         }
+    }
+
+    public LongRange single(long value) {
+        return factory.single(value);
+    }
+
+    public LongRange of(long from, long to) {
+        return factory.range(from, to);
+    }
+
+    public LongRange above(long value) {
+        return factory.aboveIncl(value);
+    }
+
+    public LongRange aboveNotIncl(long value) {
+        return factory.above(value);
+    }
+
+    public LongRange below(long value) {
+        return factory.belowIncl(value);
+    }
+
+    public LongRange belowNotIncl(long value) {
+        return factory.below(value);
+    }
+
+    public ConstConstraint<LongRange, Long> gte(long value) {
+        return factory.gte(value);
+    }
+
+    public ConstConstraint<LongRange, Long> gt(long value) {
+        return factory.gt(value);
+    }
+
+    public ConstConstraint<LongRange, Long> lte(long value) {
+        return factory.lte(value);
+    }
+
+    public ConstConstraint<LongRange, Long> lt(long value) {
+        return factory.lt(value);
+    }
+
+    public ConstConstraint<LongRange, Long> eq(long value) {
+        return factory.eq(value);
+    }
+
+    @SafeVarargs
+    public final ConstConstraint<LongRange, Long> and(ConstConstraint<LongRange, Long>... constraints) {
+        return factory.and(constraints);
+    }
+
+    @SafeVarargs
+    public final ConstConstraint<LongRange, Long> or(ConstConstraint<LongRange, Long>... constraints) {
+        return factory.or(constraints);
+    }
+
+    public ConstConstraint<LongRange, Long> domain(
+            ConstOperator<LongRange, Long> operator,
+            ConstConstraint<LongRange, Long> constraint) {
+
+        return factory.domain(operator, constraint);
+    }
+
+    public ConstOperator<LongRange, Long> add(long value) {
+        return factory.add(value);
     }
 }
