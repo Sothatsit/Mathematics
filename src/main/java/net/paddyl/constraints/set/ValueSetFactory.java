@@ -51,6 +51,11 @@ public abstract class ValueSetFactory<S extends ValueSet<S, V>, V> {
     public abstract S empty();
 
     /**
+     * @return a set containing all possible values.
+     */
+    public abstract S all();
+
+    /**
      * @return a set including only {@param value}.
      */
     public S single(V value) {

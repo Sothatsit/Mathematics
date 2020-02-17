@@ -46,7 +46,7 @@ public class LongRange implements ValueSet<LongRange, Long> {
     @Override
     public String toString() {
         if (isEmpty())
-            return "LongRange{<empty>}";
+            return "LongRange{EMPTY}";
         if (min == max)
             return "LongRange{" + min + "}";
         if (min == Long.MIN_VALUE && max == Long.MAX_VALUE)

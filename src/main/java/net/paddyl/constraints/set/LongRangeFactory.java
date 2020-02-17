@@ -15,6 +15,11 @@ public class LongRangeFactory extends ValueSetFactory<LongRange, Long> {
     }
 
     @Override
+    public LongRange all() {
+        return LongRange.ALL;
+    }
+
+    @Override
     public LongRange range(Long from, Long to) {
         return new LongRange(from, to);
     }
