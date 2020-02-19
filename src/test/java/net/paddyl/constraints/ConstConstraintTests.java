@@ -19,7 +19,9 @@ public class ConstConstraintTests {
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { "LongRange", new LongRange.LongRangeFactory() },
-                { "IntRange", new IntRange.IntRangeFactory() }
+                { "IntRange", new IntRange.IntRangeFactory() },
+                { "ShortRange", new ShortRange.ShortRangeFactory() },
+                { "ByteRange", new ByteRange.ByteRangeFactory() }
         });
     }
 

@@ -3,7 +3,7 @@ package net.paddyl.constraints.set;
 import net.paddyl.util.NumberType;
 
 /**
- * Inclusive range of longs.
+ * Inclusive range of ints.
  */
 public class IntRange extends NumberRange<IntRange, Integer> {
 
