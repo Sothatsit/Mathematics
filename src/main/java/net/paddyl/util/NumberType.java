@@ -176,42 +176,153 @@ public abstract class NumberType<T extends Number> {
     protected abstract T coerceImpl(Number number);
 
     /**
-     * @return the value {@code 0} if {@code one == two};
-     *         a value less than {@code 0} if {@code one < two}; and
-     *         a value greater than {@code 0} if {@code one > two}
+     * After coercing both values to this type, compare them.
+     * @see #compareImpl(Number, Number)
      */
     public int compare(Number one, Number two) {
         return compareImpl(coerce(one), coerce(two));
     }
 
-    protected abstract int compareImpl(T one, T two);
+    /**
+     * @return the value {@code 0} if {@code one == two};
+     *         a value less than {@code 0} if {@code one < two}; and
+     *         a value greater than {@code 0} if {@code one > two}
+     */
+    public abstract int compareImpl(T one, T two);
 
     /**
-     * @return the sum of {@param one} and {@param two} in this number type.
+     * @return whether {@param one} is greater than or equal to {@param two} when coerced to this type.
+     */
+    public boolean gte(Number one, Number two) {
+        return gteImpl(coerce(one), coerce(two));
+    }
+
+    /**
+     * @return whether {@param one} is greater than or equal to {@param two}.
+     */
+    public boolean gteImpl(T one, T two) {
+        return compareImpl(one, two) >= 0;
+    }
+
+    /**
+     * @return whether {@param one} is greater than {@param two} when coerced to this type.
+     */
+    public boolean gt(Number one, Number two) {
+        return gtImpl(coerce(one), coerce(two));
+    }
+
+    /**
+     * @return whether {@param one} is greater than {@param two}.
+     */
+    public boolean gtImpl(T one, T two) {
+        return compareImpl(one, two) > 0;
+    }
+
+    /**
+     * @return whether {@param one} is less than or equal to {@param two} when coerced to this type.
+     */
+    public boolean lte(Number one, Number two) {
+        return lteImpl(coerce(one), coerce(two));
+    }
+
+    /**
+     * @return whether {@param one} is less than or equal to {@param two}.
+     */
+    public boolean lteImpl(T one, T two) {
+        return compareImpl(one, two) <= 0;
+    }
+
+    /**
+     * @return whether {@param one} is less than {@param two} when coerced to this type.
+     */
+    public boolean lt(Number one, Number two) {
+        return ltImpl(coerce(one), coerce(two));
+    }
+
+    /**
+     * @return whether {@param one} is less than {@param two}.
+     */
+    public boolean ltImpl(T one, T two) {
+        return compareImpl(one, two) < 0;
+    }
+
+    /**
+     * @return whether {@param one} is equal to {@param two} when coerced to this type.
+     */
+    public boolean eq(Number one, Number two) {
+        return eqImpl(coerce(one), coerce(two));
+    }
+
+    /**
+     * @return whether {@param one} is equal to {@param two}.
+     */
+    public boolean eqImpl(T one, T two) {
+        return compareImpl(one, two) == 0;
+    }
+
+    /**
+     * @return the sum of {@param one} and {@param two} when coerced to this type.
      */
     public T add(Number one, Number two) {
         return addImpl(coerce(one), coerce(two));
     }
 
-    protected abstract T addImpl(T one, T two);
+    /**
+     * @return the sum of {@param one} and {@param two}.
+     */
+    public abstract T addImpl(T one, T two);
 
     /**
-     * @return the value of {@param one} minus {@param two} in this number type.
+     * @return the value of {@param one} minus {@param two} when coerced to this type.
      */
     public T subtract(Number one, Number two) {
         return subtractImpl(coerce(one), coerce(two));
     }
 
-    protected abstract T subtractImpl(T one, T two);
+    /**
+     * @return the value of {@param one} minus {@param two}.
+     */
+    public abstract T subtractImpl(T one, T two);
 
     /**
-     * @return the absolute value of {@param number} in this number type.
+     * @return the absolute value of {@param number} when coerced to this type.
      */
     public T absolute(Number number) {
         return absoluteImpl(coerce(number));
     }
 
-    protected abstract T absoluteImpl(T number);
+    /**
+     * @return the absolute value of {@param number}.
+     */
+    public abstract T absoluteImpl(T number);
+
+    /**
+     * @return the minimum of {@param one} and {@param two} when coerced to this type.
+     */
+    public T min(Number one, Number two) {
+        return minImpl(coerce(one), coerce(two));
+    }
+
+    /**
+     * @return the minimum of {@param one} and {@param two}.
+     */
+    public T minImpl(T one, T two) {
+        return ltImpl(one, two) ? one : two;
+    }
+
+    /**
+     * @return the maximum of {@param one} and {@param two} when coerced to this type.
+     */
+    public T max(Number one, Number two) {
+        return maxImpl(coerce(one), coerce(two));
+    }
+
+    /**
+     * @return the maximum of {@param one} and {@param two}.
+     */
+    public T maxImpl(T one, T two) {
+        return gtImpl(one, two) ? one : two;
+    }
 
     @Override
     public String toString() {
@@ -340,17 +451,37 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        protected Byte addImpl(Byte one, Byte two) {
+        public boolean gteImpl(Byte one, Byte two) {
+            return one >= two;
+        }
+
+        @Override
+        public boolean gtImpl(Byte one, Byte two) {
+            return one > two;
+        }
+
+        @Override
+        public boolean lteImpl(Byte one, Byte two) {
+            return one <= two;
+        }
+
+        @Override
+        public boolean ltImpl(Byte one, Byte two) {
+            return one < two;
+        }
+
+        @Override
+        public Byte addImpl(Byte one, Byte two) {
             return (byte) (one + two);
         }
 
         @Override
-        protected Byte subtractImpl(Byte one, Byte two) {
+        public Byte subtractImpl(Byte one, Byte two) {
             return (byte) (one - two);
         }
 
         @Override
-        protected Byte absoluteImpl(Byte number) {
+        public Byte absoluteImpl(Byte number) {
             return (byte) Math.abs(number);
         }
     }
@@ -375,17 +506,37 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        protected Short addImpl(Short one, Short two) {
+        public boolean gteImpl(Short one, Short two) {
+            return one >= two;
+        }
+
+        @Override
+        public boolean gtImpl(Short one, Short two) {
+            return one > two;
+        }
+
+        @Override
+        public boolean lteImpl(Short one, Short two) {
+            return one <= two;
+        }
+
+        @Override
+        public boolean ltImpl(Short one, Short two) {
+            return one < two;
+        }
+
+        @Override
+        public Short addImpl(Short one, Short two) {
             return (short) (one + two);
         }
 
         @Override
-        protected Short subtractImpl(Short one, Short two) {
+        public Short subtractImpl(Short one, Short two) {
             return (short) (one - two);
         }
 
         @Override
-        protected Short absoluteImpl(Short number) {
+        public Short absoluteImpl(Short number) {
             return (short) Math.abs(number);
         }
     }
@@ -410,17 +561,37 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        protected Integer addImpl(Integer one, Integer two) {
+        public boolean gteImpl(Integer one, Integer two) {
+            return one >= two;
+        }
+
+        @Override
+        public boolean gtImpl(Integer one, Integer two) {
+            return one > two;
+        }
+
+        @Override
+        public boolean lteImpl(Integer one, Integer two) {
+            return one <= two;
+        }
+
+        @Override
+        public boolean ltImpl(Integer one, Integer two) {
+            return one < two;
+        }
+
+        @Override
+        public Integer addImpl(Integer one, Integer two) {
             return one + two;
         }
 
         @Override
-        protected Integer subtractImpl(Integer one, Integer two) {
+        public Integer subtractImpl(Integer one, Integer two) {
             return one - two;
         }
 
         @Override
-        protected Integer absoluteImpl(Integer number) {
+        public Integer absoluteImpl(Integer number) {
             return Math.abs(number);
         }
     }
@@ -445,17 +616,37 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        protected Long addImpl(Long one, Long two) {
+        public boolean gteImpl(Long one, Long two) {
+            return one >= two;
+        }
+
+        @Override
+        public boolean gtImpl(Long one, Long two) {
+            return one > two;
+        }
+
+        @Override
+        public boolean lteImpl(Long one, Long two) {
+            return one <= two;
+        }
+
+        @Override
+        public boolean ltImpl(Long one, Long two) {
+            return one < two;
+        }
+
+        @Override
+        public Long addImpl(Long one, Long two) {
             return one + two;
         }
 
         @Override
-        protected Long subtractImpl(Long one, Long two) {
+        public Long subtractImpl(Long one, Long two) {
             return one - two;
         }
 
         @Override
-        protected Long absoluteImpl(Long number) {
+        public Long absoluteImpl(Long number) {
             return Math.abs(number);
         }
     }
@@ -484,17 +675,17 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        protected BigInteger addImpl(BigInteger one, BigInteger two) {
+        public BigInteger addImpl(BigInteger one, BigInteger two) {
             return one.add(two);
         }
 
         @Override
-        protected BigInteger subtractImpl(BigInteger one, BigInteger two) {
+        public BigInteger subtractImpl(BigInteger one, BigInteger two) {
             return one.subtract(two);
         }
 
         @Override
-        protected BigInteger absoluteImpl(BigInteger number) {
+        public BigInteger absoluteImpl(BigInteger number) {
             return number.abs();
         }
     }
@@ -519,17 +710,37 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        protected Float addImpl(Float one, Float two) {
+        public boolean gteImpl(Float one, Float two) {
+            return one >= two;
+        }
+
+        @Override
+        public boolean gtImpl(Float one, Float two) {
+            return one > two;
+        }
+
+        @Override
+        public boolean lteImpl(Float one, Float two) {
+            return one <= two;
+        }
+
+        @Override
+        public boolean ltImpl(Float one, Float two) {
+            return one < two;
+        }
+
+        @Override
+        public Float addImpl(Float one, Float two) {
             return one + two;
         }
 
         @Override
-        protected Float subtractImpl(Float one, Float two) {
+        public Float subtractImpl(Float one, Float two) {
             return one - two;
         }
 
         @Override
-        protected Float absoluteImpl(Float number) {
+        public Float absoluteImpl(Float number) {
             return Math.abs(number);
         }
     }
@@ -554,17 +765,37 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        protected Double addImpl(Double one, Double two) {
+        public boolean gteImpl(Double one, Double two) {
+            return one >= two;
+        }
+
+        @Override
+        public boolean gtImpl(Double one, Double two) {
+            return one > two;
+        }
+
+        @Override
+        public boolean lteImpl(Double one, Double two) {
+            return one <= two;
+        }
+
+        @Override
+        public boolean ltImpl(Double one, Double two) {
+            return one < two;
+        }
+
+        @Override
+        public Double addImpl(Double one, Double two) {
             return one + two;
         }
 
         @Override
-        protected Double subtractImpl(Double one, Double two) {
+        public Double subtractImpl(Double one, Double two) {
             return one - two;
         }
 
         @Override
-        protected Double absoluteImpl(Double number) {
+        public Double absoluteImpl(Double number) {
             return Math.abs(number);
         }
     }
@@ -595,17 +826,17 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        protected BigDecimal addImpl(BigDecimal one, BigDecimal two) {
+        public BigDecimal addImpl(BigDecimal one, BigDecimal two) {
             return one.add(two);
         }
 
         @Override
-        protected BigDecimal subtractImpl(BigDecimal one, BigDecimal two) {
+        public BigDecimal subtractImpl(BigDecimal one, BigDecimal two) {
             return one.subtract(two);
         }
 
         @Override
-        protected BigDecimal absoluteImpl(BigDecimal number) {
+        public BigDecimal absoluteImpl(BigDecimal number) {
             return number.abs();
         }
     }

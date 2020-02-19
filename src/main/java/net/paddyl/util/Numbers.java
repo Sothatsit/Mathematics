@@ -7,9 +7,20 @@ package net.paddyl.util;
  * Note this is not efficient. It requires lookups
  * for type classes and boxing/unboxing primitives.
  *
+ * If more efficiency is required, consider caching
+ * the NumberType that the operations are to be
+ * performed in and using it directly.
+ *
  * @author Paddy Lamont
  */
 public class Numbers {
+
+    /**
+     * @see NumberType#getDominantType(Number...)
+     */
+    public static NumberType<?> getDominantType(Number... numbers) {
+        return NumberType.getDominantType(numbers);
+    }
 
     /**
      * @return the value {@code 0} if {@code one == two};
@@ -17,42 +28,42 @@ public class Numbers {
      *          a value greater than {@code 0} if {@code one > two}
      */
     public static int compare(Number one, Number two) {
-        return NumberType.getDominantType(one, two).compare(one, two);
+        return getDominantType(one, two).compare(one, two);
     }
 
     /**
      * @return {@code true} iff {@code one == two}, else {@code false}
      */
     public static boolean equal(Number one, Number two) {
-        return compare(one, two) == 0;
+        return getDominantType(one, two).eq(one, two);
     }
 
     /**
      * @return {@code true} iff {@code one > two}, else {@code false}
      */
     public static boolean greaterThan(Number one, Number two) {
-        return compare(one, two) > 0;
+        return getDominantType(one, two).gt(one, two);
     }
 
     /**
      * @return {@code true} if {@code one < two}, else {@code false}
      */
     public static boolean lessThan(Number one, Number two) {
-        return compare(one, two) < 0;
+        return getDominantType(one, two).lt(one, two);
     }
 
     /**
      * @return {@code true} if {@code one >= two}, else {@code false}
      */
     public static boolean greaterThanOrEqual(Number one, Number two) {
-        return compare(one, two) >= 0;
+        return getDominantType(one, two).gte(one, two);
     }
 
     /**
      * @return {@code true} if {@code one <= two}, else {@code false}
      */
     public static boolean lessThanOrEqual(Number one, Number two) {
-        return compare(one, two) <= 0;
+        return getDominantType(one, two).lte(one, two);
     }
 
     /**
@@ -69,7 +80,7 @@ public class Numbers {
      *         Does not avoid integer overflow.
      */
     public static Number add(Number one, Number two) {
-        return NumberType.getDominantType(one, two).add(one, two);
+        return getDominantType(one, two).add(one, two);
     }
 
     /**
@@ -77,11 +88,11 @@ public class Numbers {
      *         Does not avoid integer overflow.
      */
     public static Number subtract(Number one, Number two) {
-        return NumberType.getDominantType(one, two).subtract(one, two);
+        return getDominantType(one, two).subtract(one, two);
     }
 
     private static NumberType<?> getExactAddSubtractType(Number... numbers) {
-        NumberType<?> type = NumberType.getDominantType(numbers);
+        NumberType<?> type = getDominantType(numbers);
 
         if (type.isFloatingPoint())
             return NumberType.BIG_DECIMAL;

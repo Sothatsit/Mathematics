@@ -3,15 +3,17 @@ package net.paddyl.util;
 /**
  * Contains shorthand aliases for methods in {@link Numbers}.
  *
+ * @see Numbers
+ *
  * @author Paddy Lamont
  */
 public class Num {
 
     /**
-     * @see NumberType#getDominantType(Number...)
+     * @see Numbers#getDominantType(Number...)
      */
     public static NumberType<?> type(Number... numbers) {
-        return NumberType.getDominantType(numbers);
+        return Numbers.getDominantType(numbers);
     }
 
     /**

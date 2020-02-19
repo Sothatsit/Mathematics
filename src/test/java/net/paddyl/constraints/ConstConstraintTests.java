@@ -2,10 +2,7 @@ package net.paddyl.constraints;
 
 import static org.junit.Assert.*;
 
-import net.paddyl.constraints.set.LongRange;
-import net.paddyl.constraints.set.LongRangeFactory;
-import net.paddyl.constraints.set.ValueSet;
-import net.paddyl.constraints.set.ValueSetFactory;
+import net.paddyl.constraints.set.*;
 import net.paddyl.util.NumberType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +18,8 @@ public class ConstConstraintTests {
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { "LongRange", NumberType.LONG, new LongRangeFactory() }
+                { "LongRange", new LongRange.LongRangeFactory() },
+                { "IntRange", new IntRange.IntRangeFactory() }
         });
     }
 
@@ -38,8 +36,8 @@ public class ConstConstraintTests {
     private CompTestCase[] compTestCases = null;
     private MultiTestCase[] multiTestCases = null;
 
-    public ConstConstraintTests(String name, NumberType<?> numberType, ValueSetFactory<?, ?> factory) {
-        this.numberType = numberType;
+    public ConstConstraintTests(String name, NumberRangeFactory factory) {
+        this.numberType = factory.type;
         this.MAX = numberType.getMaxValue();
         this.MIN = numberType.getMinValue();
         this.MIN_P1 = numberType.add(MIN, 1);
