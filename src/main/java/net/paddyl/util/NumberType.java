@@ -285,6 +285,42 @@ public abstract class NumberType<T extends Number> {
     public abstract T subtractImpl(T one, T two);
 
     /**
+     * @return the multiplication of {@param one} and {@param two} when coerced to this type.
+     */
+    public T mul(Number one, Number two) {
+        return mulImpl(coerce(one), coerce(two));
+    }
+
+    /**
+     * @return the multiplication of {@param one} and {@param two}.
+     */
+    public abstract T mulImpl(T one, T two);
+
+    /**
+     * @return the division of {@param one} and {@param two} when coerced to this type.
+     */
+    public T div(Number one, Number two) {
+        return divImpl(coerce(one), coerce(two));
+    }
+
+    /**
+     * @return the division of {@param one} and {@param two}.
+     */
+    public abstract T divImpl(T one, T two);
+
+    /**
+     * @return the remainder of {@param one} divided by {@param two} when coerced to this type.
+     */
+    public T remainder(Number one, Number two) {
+        return remainderImpl(coerce(one), coerce(two));
+    }
+
+    /**
+     * @return the remainder of {@param one} divided by {@param two}.
+     */
+    public abstract T remainderImpl(T one, T two);
+
+    /**
      * @return the absolute value of {@param number} when coerced to this type.
      */
     public T absolute(Number number) {
@@ -481,6 +517,21 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
+        public Byte mulImpl(Byte one, Byte two) {
+            return (byte) (one * two);
+        }
+
+        @Override
+        public Byte divImpl(Byte one, Byte two) {
+            return (byte) (one / two);
+        }
+
+        @Override
+        public Byte remainderImpl(Byte one, Byte two) {
+            return (byte) (one % two);
+        }
+
+        @Override
         public Byte absoluteImpl(Byte number) {
             return (byte) Math.abs(number);
         }
@@ -533,6 +584,21 @@ public abstract class NumberType<T extends Number> {
         @Override
         public Short subtractImpl(Short one, Short two) {
             return (short) (one - two);
+        }
+
+        @Override
+        public Short mulImpl(Short one, Short two) {
+            return (short) (one * two);
+        }
+
+        @Override
+        public Short divImpl(Short one, Short two) {
+            return (short) (one / two);
+        }
+
+        @Override
+        public Short remainderImpl(Short one, Short two) {
+            return (short) (one % two);
         }
 
         @Override
@@ -591,6 +657,21 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
+        public Integer mulImpl(Integer one, Integer two) {
+            return one * two;
+        }
+
+        @Override
+        public Integer divImpl(Integer one, Integer two) {
+            return one / two;
+        }
+
+        @Override
+        public Integer remainderImpl(Integer one, Integer two) {
+            return one % two;
+        }
+
+        @Override
         public Integer absoluteImpl(Integer number) {
             return Math.abs(number);
         }
@@ -646,6 +727,21 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
+        public Long mulImpl(Long one, Long two) {
+            return one * two;
+        }
+
+        @Override
+        public Long divImpl(Long one, Long two) {
+            return one / two;
+        }
+
+        @Override
+        public Long remainderImpl(Long one, Long two) {
+            return one % two;
+        }
+
+        @Override
         public Long absoluteImpl(Long number) {
             return Math.abs(number);
         }
@@ -682,6 +778,21 @@ public abstract class NumberType<T extends Number> {
         @Override
         public BigInteger subtractImpl(BigInteger one, BigInteger two) {
             return one.subtract(two);
+        }
+
+        @Override
+        public BigInteger mulImpl(BigInteger one, BigInteger two) {
+            return one.multiply(two);
+        }
+
+        @Override
+        public BigInteger divImpl(BigInteger one, BigInteger two) {
+            return one.divide(two);
+        }
+
+        @Override
+        public BigInteger remainderImpl(BigInteger one, BigInteger two) {
+            return one.remainder(two);
         }
 
         @Override
@@ -740,6 +851,21 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
+        public Float mulImpl(Float one, Float two) {
+            return one * two;
+        }
+
+        @Override
+        public Float divImpl(Float one, Float two) {
+            return one / two;
+        }
+
+        @Override
+        public Float remainderImpl(Float one, Float two) {
+            return one % two;
+        }
+
+        @Override
         public Float absoluteImpl(Float number) {
             return Math.abs(number);
         }
@@ -795,6 +921,21 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
+        public Double mulImpl(Double one, Double two) {
+            return one * two;
+        }
+
+        @Override
+        public Double divImpl(Double one, Double two) {
+            return one / two;
+        }
+
+        @Override
+        public Double remainderImpl(Double one, Double two) {
+            return one % two;
+        }
+
+        @Override
         public Double absoluteImpl(Double number) {
             return Math.abs(number);
         }
@@ -833,6 +974,21 @@ public abstract class NumberType<T extends Number> {
         @Override
         public BigDecimal subtractImpl(BigDecimal one, BigDecimal two) {
             return one.subtract(two);
+        }
+
+        @Override
+        public BigDecimal mulImpl(BigDecimal one, BigDecimal two) {
+            return one.multiply(two);
+        }
+
+        @Override
+        public BigDecimal divImpl(BigDecimal one, BigDecimal two) {
+            throw new UnsupportedOperationException("BigDecimal division is unsupported");
+        }
+
+        @Override
+        public BigDecimal remainderImpl(BigDecimal one, BigDecimal two) {
+            return one.remainder(two);
         }
 
         @Override
