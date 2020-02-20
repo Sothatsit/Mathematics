@@ -7,11 +7,11 @@ import net.paddyl.util.NumberType;
  */
 public class ShortRange extends NumberRange<ShortRange, Short> {
 
-    public static final ShortRange EMPTY = new ShortRange((short) 0, (short) -1);
-    public static final ShortRange ALL = new ShortRange(Short.MIN_VALUE, Short.MAX_VALUE);
+    public static final ShortRange EMPTY = new ShortRange((short) 0, (short) -1, null);
+    public static final ShortRange ALL = new ShortRange(Short.MIN_VALUE, Short.MAX_VALUE, null);
 
-    public ShortRange(short min, short max) {
-        super(NumberType.SHORT, min, max);
+    public ShortRange(Short min, Short max, Short step) {
+        super(NumberType.SHORT, min, max, step);
     }
 
     /**
@@ -24,8 +24,8 @@ public class ShortRange extends NumberRange<ShortRange, Short> {
         }
 
         @Override
-        public ShortRange createRange(Short min, Short max) {
-            return new ShortRange(min, max);
+        public ShortRange createRange(Short min, Short max, Short step) {
+            return new ShortRange(min, max, step);
         }
 
         @Override

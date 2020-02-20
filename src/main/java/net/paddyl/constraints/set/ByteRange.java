@@ -7,11 +7,11 @@ import net.paddyl.util.NumberType;
  */
 public class ByteRange extends NumberRange<ByteRange, Byte> {
 
-    public static final ByteRange EMPTY = new ByteRange((byte) 0, (byte) -1);
-    public static final ByteRange ALL = new ByteRange(Byte.MIN_VALUE, Byte.MAX_VALUE);
+    public static final ByteRange EMPTY = new ByteRange((byte) 0, (byte) -1, null);
+    public static final ByteRange ALL = new ByteRange(Byte.MIN_VALUE, Byte.MAX_VALUE, null);
 
-    public ByteRange(byte min, byte max) {
-        super(NumberType.BYTE, min, max);
+    public ByteRange(Byte min, Byte max, Byte step) {
+        super(NumberType.BYTE, min, max, step);
     }
 
     /**
@@ -24,8 +24,8 @@ public class ByteRange extends NumberRange<ByteRange, Byte> {
         }
 
         @Override
-        public ByteRange createRange(Byte min, Byte max) {
-            return new ByteRange(min, max);
+        public ByteRange createRange(Byte min, Byte max, Byte step) {
+            return new ByteRange(min, max, step);
         }
 
         @Override

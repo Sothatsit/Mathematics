@@ -25,7 +25,11 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
             throw new IllegalArgumentException("types that do not have min or max values are not supported");
     }
 
-    public abstract R createRange(N min, N max);
+    public abstract R createRange(N min, N max, N step);
+
+    public R createRange(N min, N max) {
+        return createRange(min, max, null);
+    }
 
     @Override
     public R range(N from, N to) {

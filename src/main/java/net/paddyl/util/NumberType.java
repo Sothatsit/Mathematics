@@ -168,6 +168,8 @@ public abstract class NumberType<T extends Number> {
      * @return the value {@param number} converted to this number type.
      */
     public T coerce(Number number) {
+        if (number == null)
+            return null;
         if (number.getClass().equals(boxClass))
             return Cast.cast(number);
         return coerceImpl(number);
@@ -257,6 +259,9 @@ public abstract class NumberType<T extends Number> {
      * @return whether {@param one} is equal to {@param two}.
      */
     public boolean eqImpl(T one, T two) {
+        if (one == null || two == null)
+            return one == null && two == null;
+
         return compareImpl(one, two) == 0;
     }
 
@@ -309,6 +314,8 @@ public abstract class NumberType<T extends Number> {
     public abstract T divImpl(T one, T two);
 
     /**
+     * {@code one % two}
+     *
      * @return the remainder of {@param one} divided by {@param two} when coerced to this type.
      */
     public T remainder(Number one, Number two) {
@@ -316,9 +323,26 @@ public abstract class NumberType<T extends Number> {
     }
 
     /**
+     * {@code one % two}
+     *
      * @return the remainder of {@param one} divided by {@param two}.
      */
     public abstract T remainderImpl(T one, T two);
+
+    /**
+     * @return the modulus of {@param one} and {@param two} when coerced to this type.
+     */
+    public T modulo(Number one, Number two) {
+        return moduloImpl(coerce(one), coerce(two));
+    }
+
+    /**
+     * @return the modulus of {@param one} and {@param two}.
+     */
+    public T moduloImpl(T one, T two) {
+        T remainder = remainderImpl(one, two);
+        return gteImpl(remainder, coerce(0)) ? remainder : addImpl(remainder, two);
+    }
 
     /**
      * @return the absolute value of {@param number} when coerced to this type.
@@ -988,7 +1012,7 @@ public abstract class NumberType<T extends Number> {
 
         @Override
         public BigDecimal remainderImpl(BigDecimal one, BigDecimal two) {
-            return one.remainder(two);
+            throw new UnsupportedOperationException("BigDecimal remainder is unsupported");
         }
 
         @Override
