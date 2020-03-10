@@ -3,8 +3,6 @@ package net.paddyl.util;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-// TODO : Rename parameters to "a", "b", etc... instead of "one", "two", as those are now fields for the actual numbers
-
 /**
  * Allows for generic handling for Java's primitive number types.
  */
@@ -132,58 +130,55 @@ public abstract class NumberType<T extends Number> {
     protected abstract T coerceImpl(Number number);
 
     /**
-     * @return the value {@code 0} if {@code one == two};
-     *         a value less than {@code 0} if {@code one < two}; and
-     *         a value greater than {@code 0} if {@code one > two}
+     * @return the value {@code 0} if {@code a == b};
+     *         a value less than {@code 0} if {@code a < b}; and
+     *         a value greater than {@code 0} if {@code a > b}
      */
-    public abstract int compare(T one, T two);
+    public abstract int compare(T a, T b);
 
     /**
-     * {@code one >= two}
+     * {@code a >= b}
      *
-     * @return whether {@param one} is greater than or equal to {@param two}.
+     * @return whether {@param a} is greater than or equal to {@param b}.
      */
-    public boolean gte(T one, T two) {
-        return compare(one, two) >= 0;
+    public boolean gte(T a, T b) {
+        return compare(a, b) >= 0;
     }
 
     /**
-     * {@code one > two}
+     * {@code a > b}
      *
-     * @return whether {@param one} is greater than {@param two}.
+     * @return whether {@param a} is greater than {@param b}.
      */
-    public boolean gt(T one, T two) {
-        return compare(one, two) > 0;
+    public boolean gt(T a, T b) {
+        return compare(a, b) > 0;
     }
 
     /**
-     * {@code one <= two}
+     * {@code a <= b}
      *
-     * @return whether {@param one} is less than or equal to {@param two}.
+     * @return whether {@param a} is less than or equal to {@param b}.
      */
-    public boolean lte(T one, T two) {
-        return compare(one, two) <= 0;
+    public boolean lte(T a, T b) {
+        return compare(a, b) <= 0;
     }
 
     /**
-     * {@code one < two}
+     * {@code a < b}
      *
-     * @return whether {@param one} is less than {@param two}.
+     * @return whether {@param a} is less than {@param b}.
      */
-    public boolean lt(T one, T two) {
-        return compare(one, two) < 0;
+    public boolean lt(T a, T b) {
+        return compare(a, b) < 0;
     }
 
     /**
-     * {@code one == two}
+     * {@code a == b}
      *
-     * @return whether {@param one} is equal to {@param two}.
+     * @return whether {@param a} is equal to {@param b}.
      */
-    public boolean eq(T one, T two) {
-        if (one == null || two == null)
-            return one == null && two == null;
-
-        return compare(one, two) == 0;
+    public boolean eq(T a, T b) {
+        return compare(a, b) == 0;
     }
 
     /**
@@ -196,18 +191,18 @@ public abstract class NumberType<T extends Number> {
     }
 
     /**
-     * {@code one + two}
+     * {@code a + b}
      *
-     * @return the sum of {@param one} and {@param two}.
+     * @return the sum of {@param a} and {@param b}.
      */
-    public abstract T add(T one, T two);
+    public abstract T add(T a, T b);
 
     /**
-     * {@code one - two}
+     * {@code a - b}
      *
-     * @return the value of {@param one} minus {@param two}.
+     * @return the value of {@param a} minus {@param b}.
      */
-    public abstract T subtract(T one, T two);
+    public abstract T subtract(T a, T b);
 
     /**
      * {@code -value}
@@ -219,18 +214,18 @@ public abstract class NumberType<T extends Number> {
     }
 
     /**
-     * {@code one * two}
+     * {@code a * b}
      *
-     * @return the multiplication of {@param one} and {@param two}.
+     * @return the product of {@param a} and {@param b}.
      */
-    public abstract T mul(T one, T two);
+    public abstract T mul(T a, T b);
 
     /**
-     * {@code one / two}
+     * {@code a / b}
      *
-     * @return the division of {@param one} and {@param two}.
+     * @return the division of {@param a} by {@param b}.
      */
-    public abstract T div(T one, T two);
+    public abstract T div(T a, T b);
 
     /**
      * @return the division of {@param a} by {@param b}, rounded up.
@@ -243,14 +238,14 @@ public abstract class NumberType<T extends Number> {
     }
 
     /**
-     * {@code one % two}
+     * {@code a % b}
      *
-     * @return the signedRemainder of {@param one} divided by {@param two}.
+     * @return the signed remainder of {@param a} divided by {@param b}.
      */
-    public abstract T signedRemainder(T one, T two);
+    public abstract T signedRemainder(T a, T b);
 
     /**
-     * @return the modulus of {@param one} and {@param two}.
+     * @return the positive remainder of {@param a} divided by {@param b}.
      */
     public T positiveRemainder(T one, T two) {
         T remainder = signedRemainder(one, two);
@@ -270,17 +265,17 @@ public abstract class NumberType<T extends Number> {
     public abstract T absolute(T number);
 
     /**
-     * @return the minimum of {@param one} and {@param two}.
+     * @return the minimum of {@param a} and {@param b}.
      */
-    public T min(T one, T two) {
-        return lt(one, two) ? one : two;
+    public T min(T a, T b) {
+        return lt(a, b) ? a : b;
     }
 
     /**
-     * @return the maximum of {@param one} and {@param two}.
+     * @return the maximum of {@param a} and {@param b}.
      */
-    public T max(T one, T two) {
-        return gt(one, two) ? one : two;
+    public T max(T a, T b) {
+        return gt(a, b) ? a : b;
     }
 
     /**
@@ -293,41 +288,41 @@ public abstract class NumberType<T extends Number> {
     }
 
     /**
-     * @return the greatest common divisor of {@code abs(one)} and {@code abs(two)}.
+     * @return the greatest common divisor of {@code abs(a)} and {@code abs(b)}.
      */
-    public abstract T gcd(T one, T two);
+    public abstract T gcd(T a, T b);
 
     /**
-     * @return the least common multiple of {@code abs(one)} and {@code abs(two)},
+     * @return the least common multiple of {@code abs(a)} and {@code abs(b)},
      *         or {@code -1} if it is out of the bounds of this NumberType.
      */
-    public T lcm(T one, T two) {
+    public T lcm(T a, T b) {
         // Special case zero
-        if (eq(one, zero) || eq(two, zero))
+        if (eq(a, zero) || eq(b, zero))
             return zero;
 
         // Take the absolute of one and two
-        one = absolute(one);
-        two = absolute(two);
+        a = absolute(a);
+        b = absolute(b);
 
         // Check for overflow
-        if (lte(one, zero) || lte(two, zero)) {
-            if (eq(one, this.one))
-                return two;
-            if (eq(two, this.one))
-                return one;
+        if (lte(a, zero) || lte(b, zero)) {
+            if (eq(a, one))
+                return a;
+            if (eq(b, one))
+                return a;
             return coerce(-1);
         }
 
         // Reduce one such that one * two is the LCM
-        T gcd = gcd(one, two);
-        one = div(one, gcd);
+        T gcd = gcd(a, b);
+        a = div(a, gcd);
 
         // Check for overflow
-        if (maxValue != null && !eq(one, zero) && gt(two, div(maxValue, one)))
+        if (maxValue != null && !eq(a, zero) && gt(b, div(maxValue, a)))
             return coerce(-1);
 
-        return mul(one, two);
+        return mul(a, b);
     }
 
     /**
@@ -372,7 +367,11 @@ public abstract class NumberType<T extends Number> {
         }
 
         // Brute force a solution
-        while (!eq(left, right)) { // TODO : Brute force :(
+        while (!eq(left, right)) {
+            // TODO : Brute force :(
+            // Supposed to be able to use a version of the Extended Euclidean algorithm
+            // to calculate this more efficiently.
+
             if (lt(left, right)) {
                 left = add(left, step1);
 
@@ -417,14 +416,14 @@ public abstract class NumberType<T extends Number> {
          * Uses Euclid's algorithm.
          */
         @Override
-        public T gcd(T one, T two) {
+        public T gcd(T a, T b) {
             // TODO : Does this work for negative numbers?!?
-            while (!eq(zero, two)) {
-                T temp = two;
-                two = signedRemainder(one, two);
-                one = temp;
+            while (!eq(zero, b)) {
+                T temp = b;
+                b = signedRemainder(a, b);
+                a = temp;
             }
-            return one;
+            return a;
         }
     }
 
@@ -442,7 +441,7 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public T gcd(T one, T two) {
+        public T gcd(T a, T b) {
             throw new UnsupportedOperationException("floating point greatest common divisor is unsupported");
         }
     }
@@ -462,53 +461,53 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compare(Byte one, Byte two) {
-            return Byte.compare(one, two);
+        public int compare(Byte a, Byte b) {
+            return Byte.compare(a, b);
         }
 
         @Override
-        public boolean gte(Byte one, Byte two) {
-            return one >= two;
+        public boolean gte(Byte a, Byte b) {
+            return a >= b;
         }
 
         @Override
-        public boolean gt(Byte one, Byte two) {
-            return one > two;
+        public boolean gt(Byte a, Byte b) {
+            return a > b;
         }
 
         @Override
-        public boolean lte(Byte one, Byte two) {
-            return one <= two;
+        public boolean lte(Byte a, Byte b) {
+            return a <= b;
         }
 
         @Override
-        public boolean lt(Byte one, Byte two) {
-            return one < two;
+        public boolean lt(Byte a, Byte b) {
+            return a < b;
         }
 
         @Override
-        public Byte add(Byte one, Byte two) {
-            return (byte) (one + two);
+        public Byte add(Byte a, Byte b) {
+            return (byte) (a + b);
         }
 
         @Override
-        public Byte subtract(Byte one, Byte two) {
-            return (byte) (one - two);
+        public Byte subtract(Byte a, Byte b) {
+            return (byte) (a - b);
         }
 
         @Override
-        public Byte mul(Byte one, Byte two) {
-            return (byte) (one * two);
+        public Byte mul(Byte a, Byte b) {
+            return (byte) (a * b);
         }
 
         @Override
-        public Byte div(Byte one, Byte two) {
-            return (byte) (one / two);
+        public Byte div(Byte a, Byte b) {
+            return (byte) (a / b);
         }
 
         @Override
-        public Byte signedRemainder(Byte one, Byte two) {
-            return (byte) (one % two);
+        public Byte signedRemainder(Byte a, Byte b) {
+            return (byte) (a % b);
         }
 
         @Override
@@ -532,53 +531,53 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compare(Short one, Short two) {
-            return Short.compare(one, two);
+        public int compare(Short a, Short b) {
+            return Short.compare(a, b);
         }
 
         @Override
-        public boolean gte(Short one, Short two) {
-            return one >= two;
+        public boolean gte(Short a, Short b) {
+            return a >= b;
         }
 
         @Override
-        public boolean gt(Short one, Short two) {
-            return one > two;
+        public boolean gt(Short a, Short b) {
+            return a > b;
         }
 
         @Override
-        public boolean lte(Short one, Short two) {
-            return one <= two;
+        public boolean lte(Short a, Short b) {
+            return a <= b;
         }
 
         @Override
-        public boolean lt(Short one, Short two) {
-            return one < two;
+        public boolean lt(Short a, Short b) {
+            return a < b;
         }
 
         @Override
-        public Short add(Short one, Short two) {
-            return (short) (one + two);
+        public Short add(Short a, Short b) {
+            return (short) (a + b);
         }
 
         @Override
-        public Short subtract(Short one, Short two) {
-            return (short) (one - two);
+        public Short subtract(Short a, Short b) {
+            return (short) (a - b);
         }
 
         @Override
-        public Short mul(Short one, Short two) {
-            return (short) (one * two);
+        public Short mul(Short a, Short b) {
+            return (short) (a * b);
         }
 
         @Override
-        public Short div(Short one, Short two) {
-            return (short) (one / two);
+        public Short div(Short a, Short b) {
+            return (short) (a / b);
         }
 
         @Override
-        public Short signedRemainder(Short one, Short two) {
-            return (short) (one % two);
+        public Short signedRemainder(Short a, Short b) {
+            return (short) (a % b);
         }
 
         @Override
@@ -602,53 +601,53 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compare(Integer one, Integer two) {
-            return Integer.compare(one, two);
+        public int compare(Integer a, Integer b) {
+            return Integer.compare(a, b);
         }
 
         @Override
-        public boolean gte(Integer one, Integer two) {
-            return one >= two;
+        public boolean gte(Integer a, Integer b) {
+            return a >= b;
         }
 
         @Override
-        public boolean gt(Integer one, Integer two) {
-            return one > two;
+        public boolean gt(Integer a, Integer b) {
+            return a > b;
         }
 
         @Override
-        public boolean lte(Integer one, Integer two) {
-            return one <= two;
+        public boolean lte(Integer a, Integer b) {
+            return a <= b;
         }
 
         @Override
-        public boolean lt(Integer one, Integer two) {
-            return one < two;
+        public boolean lt(Integer a, Integer b) {
+            return a < b;
         }
 
         @Override
-        public Integer add(Integer one, Integer two) {
-            return one + two;
+        public Integer add(Integer a, Integer b) {
+            return a + b;
         }
 
         @Override
-        public Integer subtract(Integer one, Integer two) {
-            return one - two;
+        public Integer subtract(Integer a, Integer b) {
+            return a - b;
         }
 
         @Override
-        public Integer mul(Integer one, Integer two) {
-            return one * two;
+        public Integer mul(Integer a, Integer b) {
+            return a * b;
         }
 
         @Override
-        public Integer div(Integer one, Integer two) {
-            return one / two;
+        public Integer div(Integer a, Integer b) {
+            return a / b;
         }
 
         @Override
-        public Integer signedRemainder(Integer one, Integer two) {
-            return one % two;
+        public Integer signedRemainder(Integer a, Integer b) {
+            return a % b;
         }
 
         @Override
@@ -672,53 +671,53 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compare(Long one, Long two) {
-            return Long.compare(one, two);
+        public int compare(Long a, Long b) {
+            return Long.compare(a, b);
         }
 
         @Override
-        public boolean gte(Long one, Long two) {
-            return one >= two;
+        public boolean gte(Long a, Long b) {
+            return a >= b;
         }
 
         @Override
-        public boolean gt(Long one, Long two) {
-            return one > two;
+        public boolean gt(Long a, Long b) {
+            return a > b;
         }
 
         @Override
-        public boolean lte(Long one, Long two) {
-            return one <= two;
+        public boolean lte(Long a, Long b) {
+            return a <= b;
         }
 
         @Override
-        public boolean lt(Long one, Long two) {
-            return one < two;
+        public boolean lt(Long a, Long b) {
+            return a < b;
         }
 
         @Override
-        public Long add(Long one, Long two) {
-            return one + two;
+        public Long add(Long a, Long b) {
+            return a + b;
         }
 
         @Override
-        public Long subtract(Long one, Long two) {
-            return one - two;
+        public Long subtract(Long a, Long b) {
+            return a - b;
         }
 
         @Override
-        public Long mul(Long one, Long two) {
-            return one * two;
+        public Long mul(Long a, Long b) {
+            return a * b;
         }
 
         @Override
-        public Long div(Long one, Long two) {
-            return one / two;
+        public Long div(Long a, Long b) {
+            return a / b;
         }
 
         @Override
-        public Long signedRemainder(Long one, Long two) {
-            return one % two;
+        public Long signedRemainder(Long a, Long b) {
+            return a % b;
         }
 
         @Override
@@ -745,33 +744,33 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compare(BigInteger one, BigInteger two) {
-            return one.compareTo(two);
+        public int compare(BigInteger a, BigInteger b) {
+            return a.compareTo(b);
         }
 
         @Override
-        public BigInteger add(BigInteger one, BigInteger two) {
-            return one.add(two);
+        public BigInteger add(BigInteger a, BigInteger b) {
+            return a.add(b);
         }
 
         @Override
-        public BigInteger subtract(BigInteger one, BigInteger two) {
-            return one.subtract(two);
+        public BigInteger subtract(BigInteger a, BigInteger b) {
+            return a.subtract(b);
         }
 
         @Override
-        public BigInteger mul(BigInteger one, BigInteger two) {
-            return one.multiply(two);
+        public BigInteger mul(BigInteger a, BigInteger b) {
+            return a.multiply(b);
         }
 
         @Override
-        public BigInteger div(BigInteger one, BigInteger two) {
-            return one.divide(two);
+        public BigInteger div(BigInteger a, BigInteger b) {
+            return a.divide(b);
         }
 
         @Override
-        public BigInteger signedRemainder(BigInteger one, BigInteger two) {
-            return one.remainder(two);
+        public BigInteger signedRemainder(BigInteger a, BigInteger b) {
+            return a.remainder(b);
         }
 
         @Override
@@ -780,8 +779,8 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public BigInteger gcd(BigInteger one, BigInteger two) {
-            return one.gcd(two);
+        public BigInteger gcd(BigInteger a, BigInteger b) {
+            return a.gcd(b);
         }
     }
 
@@ -800,53 +799,53 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compare(Float one, Float two) {
-            return Float.compare(one, two);
+        public int compare(Float a, Float b) {
+            return Float.compare(a, b);
         }
 
         @Override
-        public boolean gte(Float one, Float two) {
-            return one >= two;
+        public boolean gte(Float a, Float b) {
+            return a >= b;
         }
 
         @Override
-        public boolean gt(Float one, Float two) {
-            return one > two;
+        public boolean gt(Float a, Float b) {
+            return a > b;
         }
 
         @Override
-        public boolean lte(Float one, Float two) {
-            return one <= two;
+        public boolean lte(Float a, Float b) {
+            return a <= b;
         }
 
         @Override
-        public boolean lt(Float one, Float two) {
-            return one < two;
+        public boolean lt(Float a, Float b) {
+            return a < b;
         }
 
         @Override
-        public Float add(Float one, Float two) {
-            return one + two;
+        public Float add(Float a, Float b) {
+            return a + b;
         }
 
         @Override
-        public Float subtract(Float one, Float two) {
-            return one - two;
+        public Float subtract(Float a, Float b) {
+            return a - b;
         }
 
         @Override
-        public Float mul(Float one, Float two) {
-            return one * two;
+        public Float mul(Float a, Float b) {
+            return a * b;
         }
 
         @Override
-        public Float div(Float one, Float two) {
-            return one / two;
+        public Float div(Float a, Float b) {
+            return a / b;
         }
 
         @Override
-        public Float signedRemainder(Float one, Float two) {
-            return one % two;
+        public Float signedRemainder(Float a, Float b) {
+            return a % b;
         }
 
         @Override
@@ -870,53 +869,53 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compare(Double one, Double two) {
-            return Double.compare(one, two);
+        public int compare(Double a, Double b) {
+            return Double.compare(a, b);
         }
 
         @Override
-        public boolean gte(Double one, Double two) {
-            return one >= two;
+        public boolean gte(Double a, Double b) {
+            return a >= b;
         }
 
         @Override
-        public boolean gt(Double one, Double two) {
-            return one > two;
+        public boolean gt(Double a, Double b) {
+            return a > b;
         }
 
         @Override
-        public boolean lte(Double one, Double two) {
-            return one <= two;
+        public boolean lte(Double a, Double b) {
+            return a <= b;
         }
 
         @Override
-        public boolean lt(Double one, Double two) {
-            return one < two;
+        public boolean lt(Double a, Double b) {
+            return a < b;
         }
 
         @Override
-        public Double add(Double one, Double two) {
-            return one + two;
+        public Double add(Double a, Double b) {
+            return a + b;
         }
 
         @Override
-        public Double subtract(Double one, Double two) {
-            return one - two;
+        public Double subtract(Double a, Double b) {
+            return a - b;
         }
 
         @Override
-        public Double mul(Double one, Double two) {
-            return one * two;
+        public Double mul(Double a, Double b) {
+            return a * b;
         }
 
         @Override
-        public Double div(Double one, Double two) {
-            return one / two;
+        public Double div(Double a, Double b) {
+            return a / b;
         }
 
         @Override
-        public Double signedRemainder(Double one, Double two) {
-            return one % two;
+        public Double signedRemainder(Double a, Double b) {
+            return a % b;
         }
 
         @Override
@@ -946,32 +945,32 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compare(BigDecimal one, BigDecimal two) {
-            return one.compareTo(two);
+        public int compare(BigDecimal a, BigDecimal b) {
+            return a.compareTo(b);
         }
 
         @Override
-        public BigDecimal add(BigDecimal one, BigDecimal two) {
-            return one.add(two);
+        public BigDecimal add(BigDecimal a, BigDecimal b) {
+            return a.add(b);
         }
 
         @Override
-        public BigDecimal subtract(BigDecimal one, BigDecimal two) {
-            return one.subtract(two);
+        public BigDecimal subtract(BigDecimal a, BigDecimal b) {
+            return a.subtract(b);
         }
 
         @Override
-        public BigDecimal mul(BigDecimal one, BigDecimal two) {
-            return one.multiply(two);
+        public BigDecimal mul(BigDecimal a, BigDecimal b) {
+            return a.multiply(b);
         }
 
         @Override
-        public BigDecimal div(BigDecimal one, BigDecimal two) {
+        public BigDecimal div(BigDecimal a, BigDecimal b) {
             throw new UnsupportedOperationException("BigDecimal division is unsupported");
         }
 
         @Override
-        public BigDecimal signedRemainder(BigDecimal one, BigDecimal two) {
+        public BigDecimal signedRemainder(BigDecimal a, BigDecimal b) {
             throw new UnsupportedOperationException("BigDecimal signedRemainder is unsupported");
         }
 
