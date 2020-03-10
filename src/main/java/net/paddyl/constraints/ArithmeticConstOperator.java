@@ -27,14 +27,15 @@ public abstract class ArithmeticConstOperator<S extends ValueSet<S, V>, V> imple
         private final NumberType type;
         private final V negatedValue;
 
+        @SuppressWarnings("unchecked")
         public AddConstOperator(ValueSetFactory<S, V> factory, V value) {
             super(factory, value);
 
             if (!(value instanceof Number))
-                throw new UnsupportedOperationException();
+                throw new IllegalArgumentException("AddConstOperator only supports Number values");
 
-            this.type = Cast.cast(Num.type((Number) value));
-            this.negatedValue = Cast.cast(type.subtract(0, (Number) value));
+            this.type = Num.type((Number) value);
+            this.negatedValue = Cast.cast(type.negate((Number) value));
         }
 
         @Override
@@ -48,8 +49,38 @@ public abstract class ArithmeticConstOperator<S extends ValueSet<S, V>, V> imple
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public String toString() {
-            return type.compare((Number) value, 0) < 0 ? "- " + negatedValue : "+ " + value;
+            return type.lt((Number) value, type.getZero()) ? "- " + negatedValue : "+ " + value;
+        }
+    }
+
+    public static class MulConstOperator<S extends ValueSet<S, V>, V> extends ArithmeticConstOperator<S, V> {
+
+        private final NumberType type;
+
+        public MulConstOperator(ValueSetFactory<S, V> factory, V value) {
+            super(factory, value);
+
+            if (!(value instanceof Number))
+                throw new IllegalArgumentException("AddConstOperator only supports Number values");
+
+            this.type = Num.type((Number) value);
+        }
+
+        @Override
+        public S forward(S range) {
+            return factory.scale(range, value);
+        }
+
+        @Override
+        public S backward(S range) {
+            return factory.unscale(range, value);
+        }
+
+        @Override
+        public String toString() {
+            return "* " + value;
         }
     }
 }

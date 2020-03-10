@@ -11,6 +11,11 @@ public interface ValueSet<S extends ValueSet, V> {
     public boolean isEmpty();
 
     /**
+     * @return whether this set contains one value.
+     */
+    public boolean isSingleValue();
+
+    /**
      * @return whether this set contains {@param value}.
      */
     public boolean contains(V value);

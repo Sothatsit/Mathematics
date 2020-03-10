@@ -98,9 +98,31 @@ public abstract class ValueSetFactory<S extends ValueSet<S, V>, V> {
     public abstract S intersection(S one, S two);
 
     /**
+     * @return whether {@param one} is a subset of {@param two}.
+     */
+    public abstract boolean isSubset(S one, S two);
+
+    /**
      * @return {@param set} shifted by {@param shift}.
      */
     public abstract S shift(S set, V shift);
+
+    /**
+     * @return the negation of all values in {@param set}
+     */
+    public abstract S negate(S set);
+
+    /**
+     * @return {@param set} scaled by {@param scale}.
+     */
+    public abstract S scale(S set, V scale);
+
+    /**
+     * Performs the inverse operation to {@link #scale(ValueSet, Object)}.
+     *
+     * @return the possible set of values that could have resulted in {@param set} when scaled by {@param scale}.
+     */
+    public abstract S unscale(S set, V scale);
 
     /**
      * Greater than equals. range >= value.
@@ -163,5 +185,12 @@ public abstract class ValueSetFactory<S extends ValueSet<S, V>, V> {
      */
     public ConstOperator<S, V> add(V value) {
         return new ArithmeticConstOperator.AddConstOperator<>(this, value);
+    }
+
+    /**
+     * @return an operator that multiples by {@param value}.
+     */
+    public ConstOperator<S, V> mul(V value) {
+        return new ArithmeticConstOperator.MulConstOperator<>(this, value);
     }
 }

@@ -14,6 +14,7 @@ public abstract class NumberRange<R extends NumberRange<R, N>, N extends Number>
     public final N min;
     public final N max;
     public final N step;
+    public final N stepOr1;
 
     private final N minMaxModStep;
 
@@ -23,52 +24,58 @@ public abstract class NumberRange<R extends NumberRange<R, N>, N extends Number>
         }
 
         // Canonicalize the empty range
-        if (type.ltImpl(max, min)) {
+        if (type.lt(max, min)) {
             min = type.coerce(0);
             max = type.coerce(-1);
             step = null;
         }
 
         // Canonicalize step to null when it is 1 or irrelevant
-        if (step != null && (type.eq(step, 1) || type.eqImpl(min, max))) {
+        if (step != null && (type.eq(step, type.getOne()) || type.eq(min, max))) {
             step = null;
         }
 
         // Make sure max - min is a multiple of step
         if (step != null) {
-            N maxMod = type.remainderImpl(max, step);
-            N minMod = type.remainderImpl(min, step);
-            N modDiff = type.subtractImpl(maxMod, minMod);
-            N mod = type.moduloImpl(modDiff, step);
-            max = type.subtractImpl(max, mod);
+            N maxMod = type.signedRemainder(max, step);
+            N minMod = type.signedRemainder(min, step);
+            N modDiff = type.subtract(maxMod, minMod);
+            N mod = type.positiveRemainder(modDiff, step);
+            max = type.subtract(max, mod);
 
             // Check that it makes sense
-            maxMod = type.remainderImpl(max, step);
-            Checks.assertThat(type.eqImpl(minMod, maxMod), "minMod (" + minMod + ") != maxMod (" + maxMod + ")");
+            maxMod = type.signedRemainder(max, step);
+            Checks.assertThat(type.eq(minMod, maxMod), "minMod (" + minMod + ") != maxMod (" + maxMod + ")");
         }
 
         this.type = type;
         this.min = min;
         this.max = max;
         this.step = step;
+        this.stepOr1 = (step == null ? type.getOne() : step);
 
-        this.minMaxModStep = (step != null ? type.moduloImpl(max, step) : type.coerce(0));
+        this.minMaxModStep = (step != null ? type.positiveRemainder(max, step) : type.coerce(0));
     }
 
     @Override
     public boolean isEmpty() {
-        return type.ltImpl(max, min);
+        return type.lt(max, min);
+    }
+
+    @Override
+    public boolean isSingleValue() {
+        return type.eq(min, max);
     }
 
     @Override
     public boolean contains(N value) {
-        if (type.ltImpl(value, min) || type.gtImpl(value, max))
+        if (type.lt(value, min) || type.gt(value, max))
             return false;
         if (step == null)
             return true;
 
-        N valueModStep = type.moduloImpl(value, step);
-        return type.eqImpl(minMaxModStep, valueModStep);
+        N valueModStep = type.positiveRemainder(value, step);
+        return type.eq(minMaxModStep, valueModStep);
     }
 
     @Override
@@ -77,7 +84,9 @@ public abstract class NumberRange<R extends NumberRange<R, N>, N extends Number>
             return false;
 
         NumberRange other = (NumberRange) obj;
-        return type.eq(min, other.min) && type.eq(max, other.max) && type.eq(step, other.step);
+        return Objects.equals(min, other.min)
+                && Objects.equals(max, other.max)
+                && Objects.equals(step, other.step);
     }
 
     @Override
@@ -91,12 +100,12 @@ public abstract class NumberRange<R extends NumberRange<R, N>, N extends Number>
 
         if (isEmpty())
             return className + "{EMPTY}";
-        if (type.eqImpl(min, max))
+        if (type.eq(min, max))
             return className + "{" + min + "}";
 
-        boolean minLowest = type.eqImpl(min, type.getMinValue());
-        boolean maxHighest = type.eqImpl(max, type.getMaxValue());
-        String stepStr = (step == null ? "" : " (every " + step + ")");
+        boolean minLowest = type.eq(min, type.getMinValue());
+        boolean maxHighest = type.eq(max, type.getMaxValue());
+        String stepStr = (step == null ? "" : " (step " + step + ")");
         if (minLowest && maxHighest)
             return className + "{ALL" + stepStr + "}";
         if (minLowest)

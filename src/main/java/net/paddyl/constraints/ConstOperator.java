@@ -8,35 +8,20 @@ import net.paddyl.constraints.set.ValueSet;
 public interface ConstOperator<S extends ValueSet<S, V>, V> {
 
     /**
-     * Apply the operation.
+     * Returns the set of all possible values after applying
+     * the operation to the values contained within {@param set}.
      */
     public S forward(S range);
 
     /**
-     * Reverse the operation.
+     * Returns the set of all possible input values
+     * that could produce a value from {@param set}.
+     *
+     * The result of {@code backward(forward(set))} should _always_
+     * contain all of the values of the original set.
+     *
+     * New values can be added (due to loss of information in domain change),
+     * but values should never be lost.
      */
-    public S backward(S range);
-
-    /**
-     * @return the inverse operation.
-     */
-    public default ConstOperator<S, V> inverse() {
-        ConstOperator<S, V> original = this;
-        return new ConstOperator<S, V>() {
-            @Override
-            public S forward(S range) {
-                return original.backward(range);
-            }
-
-            @Override
-            public S backward(S range) {
-                return original.forward(range);
-            }
-
-            @Override
-            public String toString() {
-                return "inverse{" + original.toString() + "}";
-            }
-        };
-    }
+    public S backward(S set);
 }

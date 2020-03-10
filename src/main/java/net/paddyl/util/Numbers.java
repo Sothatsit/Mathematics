@@ -13,13 +13,14 @@ package net.paddyl.util;
  *
  * @author Paddy Lamont
  */
+@SuppressWarnings("unchecked")
 public class Numbers {
 
     /**
-     * @see NumberType#getDominantType(Number...)
+     * @see NumberTypes#getDominantType(Number...)
      */
     public static NumberType<?> getDominantType(Number... numbers) {
-        return NumberType.getDominantType(numbers);
+        return NumberTypes.getDominantType(numbers);
     }
 
     /**
@@ -28,42 +29,48 @@ public class Numbers {
      *          a value greater than {@code 0} if {@code one > two}
      */
     public static int compare(Number one, Number two) {
-        return getDominantType(one, two).compare(one, two);
+        NumberType type = getDominantType(one, two);
+        return type.compare(type.coerce(one), type.coerce(two));
     }
 
     /**
      * @return {@code true} iff {@code one == two}, else {@code false}
      */
     public static boolean equal(Number one, Number two) {
-        return getDominantType(one, two).eq(one, two);
+        NumberType type = getDominantType(one, two);
+        return type.eq(type.coerce(one), type.coerce(two));
     }
 
     /**
      * @return {@code true} iff {@code one > two}, else {@code false}
      */
     public static boolean greaterThan(Number one, Number two) {
-        return getDominantType(one, two).gt(one, two);
+        NumberType type = getDominantType(one, two);
+        return type.gt(type.coerce(one), type.coerce(two));
     }
 
     /**
      * @return {@code true} if {@code one < two}, else {@code false}
      */
     public static boolean lessThan(Number one, Number two) {
-        return getDominantType(one, two).lt(one, two);
+        NumberType type = getDominantType(one, two);
+        return type.lt(type.coerce(one), type.coerce(two));
     }
 
     /**
      * @return {@code true} if {@code one >= two}, else {@code false}
      */
     public static boolean greaterThanOrEqual(Number one, Number two) {
-        return getDominantType(one, two).gte(one, two);
+        NumberType type = getDominantType(one, two);
+        return type.gte(type.coerce(one), type.coerce(two));
     }
 
     /**
      * @return {@code true} if {@code one <= two}, else {@code false}
      */
     public static boolean lessThanOrEqual(Number one, Number two) {
-        return getDominantType(one, two).lte(one, two);
+        NumberType type = getDominantType(one, two);
+        return type.lte(type.coerce(one), type.coerce(two));
     }
 
     /**
@@ -80,7 +87,8 @@ public class Numbers {
      *         Does not avoid integer overflow.
      */
     public static Number add(Number one, Number two) {
-        return getDominantType(one, two).add(one, two);
+        NumberType type = getDominantType(one, two);
+        return type.add(type.coerce(one), type.coerce(two));
     }
 
     /**
@@ -88,16 +96,17 @@ public class Numbers {
      *         Does not avoid integer overflow.
      */
     public static Number subtract(Number one, Number two) {
-        return getDominantType(one, two).subtract(one, two);
+        NumberType type = getDominantType(one, two);
+        return type.subtract(type.coerce(one), type.coerce(two));
     }
 
     private static NumberType<?> getExactAddSubtractType(Number... numbers) {
         NumberType<?> type = getDominantType(numbers);
 
         if (type.isFloatingPoint())
-            return NumberType.BIG_DECIMAL;
+            return NumberTypes.BIG_DECIMAL;
 
-        NumberType<?> higherPrecision = type.getNextHigherPrecisionType();
+        NumberType<?> higherPrecision = NumberTypes.getNextHigherPrecisionType(type);
         return higherPrecision != null ? higherPrecision : type;
     }
 
@@ -105,28 +114,30 @@ public class Numbers {
      * Returns the sum of {@param one} and {@param two}, avoiding integer overflow and floating point errors.
      */
     public static Number addExact(Number one, Number two) {
-        return getExactAddSubtractType(one, two).add(one, two);
+        NumberType type = getExactAddSubtractType(one, two);
+        return type.add(type.coerce(one), type.coerce(two));
     }
 
     /**
      * Returns the value of {@param one} minus {@param two}, avoiding integer overflow and floating point errors.
      */
     public static Number subtractExact(Number one, Number two) {
-        return getExactAddSubtractType(one, two).subtract(one, two);
+        NumberType type = getExactAddSubtractType(one, two);
+        return type.subtract(type.coerce(one), type.coerce(two));
     }
 
     /**
-     * @return the absolute value of {@param value}, and avoids integer overflow.
+     * @return the absolute value of {@param value}, avoiding overflow.
      */
     public static Number absolute(Number value) {
-        NumberType<?> type = NumberType.get(value);
+        NumberType type = NumberTypes.get(value);
 
         if (type.isInteger()) {
-            NumberType<?> higherPrecision = type.getNextHigherPrecisionType();
+            NumberType higherPrecision = NumberTypes.getNextHigherPrecisionType(type);
             type = (higherPrecision != null ? higherPrecision : type);
         }
 
-        return type.absolute(value);
+        return type.absolute(type.coerce(value));
     }
 
     /**

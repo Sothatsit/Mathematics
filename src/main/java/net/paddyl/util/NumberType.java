@@ -2,58 +2,32 @@ package net.paddyl.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
-import java.util.stream.Collectors;
+
+// TODO : Rename parameters to "a", "b", etc... instead of "one", "two", as those are now fields for the actual numbers
 
 /**
  * Allows for generic handling for Java's primitive number types.
  */
 public abstract class NumberType<T extends Number> {
 
-    public static final NumberType<Byte> BYTE = new ByteType();
-    public static final NumberType<Short> SHORT = new ShortType();
-    public static final NumberType<Integer> INT = new IntType();
-    public static final NumberType<Long> LONG = new LongType();
-    public static final NumberType<BigInteger> BIG_INT = new BigIntType();
-    public static final NumberType<Float> FLOAT = new FloatType();
-    public static final NumberType<Double> DOUBLE = new DoubleType();
-    public static final NumberType<BigDecimal> BIG_DECIMAL = new BigDecimalType();
+    protected final Class<?> primitiveClass;
+    protected final Class<T> boxClass;
+    protected final int byteCount;
+    protected final boolean floatingPoint;
+    protected final int integerBitCount;
+    protected final T minValue;
+    protected final T maxValue;
+    protected final T zero;
+    protected final T one;
 
-    public static final NumberType<?>[] ALL = {
-            BYTE, SHORT, INT, BIG_INT, LONG, FLOAT, DOUBLE, BIG_DECIMAL
-    };
-
-    public static final NumberType<?>[] INTEGER_TYPES = Arrays.stream(ALL).filter(NumberType::isInteger)
-                                                              .collect(Collectors.toList())
-                                                              .toArray(new NumberType<?>[0]);
-
-    public static final NumberType<?>[] FLOAT_TYPES = Arrays.stream(ALL).filter(NumberType::isFloatingPoint)
-                                                            .collect(Collectors.toList())
-                                                            .toArray(new NumberType<?>[0]);
-
-    private static final Map<Class<? extends Number>, NumberType> BOX_TO_TYPE = new HashMap<>();
-    static {
-        for(NumberType<?> type : ALL) {
-            NumberType previous = BOX_TO_TYPE.put(type.getBoxClass(), type);
-            Checks.assertThat(previous == null, "duplicate NumberType entry found for data type " + type);
-        }
-    }
-
-    private final Class<?> primitiveClass;
-    private final Class<T> boxClass;
-    private final int byteCount;
-    private final boolean floatingPoint;
-    private final int integerBitCount;
-    private final T minValue;
-    private final T maxValue;
-
-    private NumberType(Class<?> primitiveClass,
-                       Class<T> boxClass,
-                       int byteCount,
-                       boolean floatingPoint,
-                       int integerBitCount,
-                       T minValue,
-                       T maxValue) {
+    private NumberType(
+            Class<?> primitiveClass,
+            Class<T> boxClass,
+            int byteCount,
+            boolean floatingPoint,
+            int integerBitCount,
+            T minValue,
+            T maxValue) {
 
         Checks.assertNonNull(boxClass, "boxClass");
 
@@ -68,6 +42,8 @@ public abstract class NumberType<T extends Number> {
         this.integerBitCount = integerBitCount;
         this.minValue = minValue;
         this.maxValue = maxValue;
+        this.zero = coerce(0);
+        this.one = coerce(1);
     }
 
     /**
@@ -131,45 +107,23 @@ public abstract class NumberType<T extends Number> {
     }
 
     /**
-     * @return The number type just below the precision of this one.
-     *         If floating point, the next lower floating point type,
-     *         else the next lower integer type.
+     * @return the value {@code 0} in this number type.
      */
-    public NumberType<?> getNextLowerPrecisionType() {
-        NumberType<?> highestBelow = null;
-        for (NumberType<?> type : isFloatingPoint() ? FLOAT_TYPES : INTEGER_TYPES) {
-            if (type.getByteCount() >= getByteCount())
-                continue;
-            if (highestBelow != null && type.getByteCount() < highestBelow.getByteCount())
-                continue;
-            highestBelow = type;
-        }
-        return highestBelow;
+    public T getZero() {
+        return zero;
     }
 
     /**
-     * @return The number type just above the precision of this one.
-     *         If floating point, the next higher floating point type,
-     *         else the next higher integer type.
+     * @return the value {@code 1} in this number type.
      */
-    public NumberType<?> getNextHigherPrecisionType() {
-        NumberType<?> lowestAbove = null;
-        for (NumberType<?> type : isFloatingPoint() ? FLOAT_TYPES : INTEGER_TYPES) {
-            if (type.getByteCount() <= getByteCount())
-                continue;
-            if (lowestAbove != null && type.getByteCount() > lowestAbove.getByteCount())
-                continue;
-            lowestAbove = type;
-        }
-        return lowestAbove;
+    public T getOne() {
+        return one;
     }
 
     /**
      * @return the value {@param number} converted to this number type.
      */
     public T coerce(Number number) {
-        if (number == null)
-            return null;
         if (number.getClass().equals(boxClass))
             return Cast.cast(number);
         return coerceImpl(number);
@@ -178,210 +132,263 @@ public abstract class NumberType<T extends Number> {
     protected abstract T coerceImpl(Number number);
 
     /**
-     * After coercing both values to this type, compare them.
-     * @see #compareImpl(Number, Number)
-     */
-    public int compare(Number one, Number two) {
-        return compareImpl(coerce(one), coerce(two));
-    }
-
-    /**
      * @return the value {@code 0} if {@code one == two};
      *         a value less than {@code 0} if {@code one < two}; and
      *         a value greater than {@code 0} if {@code one > two}
      */
-    public abstract int compareImpl(T one, T two);
+    public abstract int compare(T one, T two);
 
     /**
-     * @return whether {@param one} is greater than or equal to {@param two} when coerced to this type.
-     */
-    public boolean gte(Number one, Number two) {
-        return gteImpl(coerce(one), coerce(two));
-    }
-
-    /**
+     * {@code one >= two}
+     *
      * @return whether {@param one} is greater than or equal to {@param two}.
      */
-    public boolean gteImpl(T one, T two) {
-        return compareImpl(one, two) >= 0;
+    public boolean gte(T one, T two) {
+        return compare(one, two) >= 0;
     }
 
     /**
-     * @return whether {@param one} is greater than {@param two} when coerced to this type.
-     */
-    public boolean gt(Number one, Number two) {
-        return gtImpl(coerce(one), coerce(two));
-    }
-
-    /**
+     * {@code one > two}
+     *
      * @return whether {@param one} is greater than {@param two}.
      */
-    public boolean gtImpl(T one, T two) {
-        return compareImpl(one, two) > 0;
+    public boolean gt(T one, T two) {
+        return compare(one, two) > 0;
     }
 
     /**
-     * @return whether {@param one} is less than or equal to {@param two} when coerced to this type.
-     */
-    public boolean lte(Number one, Number two) {
-        return lteImpl(coerce(one), coerce(two));
-    }
-
-    /**
+     * {@code one <= two}
+     *
      * @return whether {@param one} is less than or equal to {@param two}.
      */
-    public boolean lteImpl(T one, T two) {
-        return compareImpl(one, two) <= 0;
+    public boolean lte(T one, T two) {
+        return compare(one, two) <= 0;
     }
 
     /**
-     * @return whether {@param one} is less than {@param two} when coerced to this type.
-     */
-    public boolean lt(Number one, Number two) {
-        return ltImpl(coerce(one), coerce(two));
-    }
-
-    /**
+     * {@code one < two}
+     *
      * @return whether {@param one} is less than {@param two}.
      */
-    public boolean ltImpl(T one, T two) {
-        return compareImpl(one, two) < 0;
+    public boolean lt(T one, T two) {
+        return compare(one, two) < 0;
     }
 
     /**
-     * @return whether {@param one} is equal to {@param two} when coerced to this type.
-     */
-    public boolean eq(Number one, Number two) {
-        return eqImpl(coerce(one), coerce(two));
-    }
-
-    /**
+     * {@code one == two}
+     *
      * @return whether {@param one} is equal to {@param two}.
      */
-    public boolean eqImpl(T one, T two) {
+    public boolean eq(T one, T two) {
         if (one == null || two == null)
             return one == null && two == null;
 
-        return compareImpl(one, two) == 0;
+        return compare(one, two) == 0;
     }
 
     /**
-     * @return the sum of {@param one} and {@param two} when coerced to this type.
+     * {@code min <= value && value <= max}
+     *
+     * @return whether {@param value} is in the range [{@param min}, {@param max}] inclusive.
      */
-    public T add(Number one, Number two) {
-        return addImpl(coerce(one), coerce(two));
+    public boolean inRange(T value, T min, T max) {
+        return lte(min, value) && lte(value, max);
     }
 
     /**
+     * {@code one + two}
+     *
      * @return the sum of {@param one} and {@param two}.
      */
-    public abstract T addImpl(T one, T two);
+    public abstract T add(T one, T two);
 
     /**
-     * @return the value of {@param one} minus {@param two} when coerced to this type.
-     */
-    public T subtract(Number one, Number two) {
-        return subtractImpl(coerce(one), coerce(two));
-    }
-
-    /**
+     * {@code one - two}
+     *
      * @return the value of {@param one} minus {@param two}.
      */
-    public abstract T subtractImpl(T one, T two);
+    public abstract T subtract(T one, T two);
 
     /**
-     * @return the multiplication of {@param one} and {@param two} when coerced to this type.
+     * {@code -value}
+     *
+     * @return the negation of {@param value}.
      */
-    public T mul(Number one, Number two) {
-        return mulImpl(coerce(one), coerce(two));
+    public T negate(T value) {
+        return subtract(zero, value);
     }
 
     /**
+     * {@code one * two}
+     *
      * @return the multiplication of {@param one} and {@param two}.
      */
-    public abstract T mulImpl(T one, T two);
+    public abstract T mul(T one, T two);
 
     /**
-     * @return the division of {@param one} and {@param two} when coerced to this type.
-     */
-    public T div(Number one, Number two) {
-        return divImpl(coerce(one), coerce(two));
-    }
-
-    /**
+     * {@code one / two}
+     *
      * @return the division of {@param one} and {@param two}.
      */
-    public abstract T divImpl(T one, T two);
+    public abstract T div(T one, T two);
 
     /**
-     * {@code one % two}
-     *
-     * @return the remainder of {@param one} divided by {@param two} when coerced to this type.
+     * @return the division of {@param a} by {@param b}, rounded up.
      */
-    public T remainder(Number one, Number two) {
-        return remainderImpl(coerce(one), coerce(two));
+    public T divRoundUp(T a, T b) {
+        T div = div(a, b);
+        T correction = (isMultiple(a, b) ? zero : one);
+        return add(div, correction);
+
     }
 
     /**
      * {@code one % two}
      *
-     * @return the remainder of {@param one} divided by {@param two}.
+     * @return the signedRemainder of {@param one} divided by {@param two}.
      */
-    public abstract T remainderImpl(T one, T two);
-
-    /**
-     * @return the modulus of {@param one} and {@param two} when coerced to this type.
-     */
-    public T modulo(Number one, Number two) {
-        return moduloImpl(coerce(one), coerce(two));
-    }
+    public abstract T signedRemainder(T one, T two);
 
     /**
      * @return the modulus of {@param one} and {@param two}.
      */
-    public T moduloImpl(T one, T two) {
-        T remainder = remainderImpl(one, two);
-        return gteImpl(remainder, coerce(0)) ? remainder : addImpl(remainder, two);
+    public T positiveRemainder(T one, T two) {
+        T remainder = signedRemainder(one, two);
+        return gte(remainder, zero) ? remainder : add(remainder, two);
     }
 
     /**
-     * @return the absolute value of {@param number} when coerced to this type.
+     * @return whether {@param a} is a multiple of {@param b}.
      */
-    public T absolute(Number number) {
-        return absoluteImpl(coerce(number));
+    public boolean isMultiple(T a, T b) {
+        return eq(zero, signedRemainder(a, b));
     }
 
     /**
      * @return the absolute value of {@param number}.
      */
-    public abstract T absoluteImpl(T number);
-
-    /**
-     * @return the minimum of {@param one} and {@param two} when coerced to this type.
-     */
-    public T min(Number one, Number two) {
-        return minImpl(coerce(one), coerce(two));
-    }
+    public abstract T absolute(T number);
 
     /**
      * @return the minimum of {@param one} and {@param two}.
      */
-    public T minImpl(T one, T two) {
-        return ltImpl(one, two) ? one : two;
-    }
-
-    /**
-     * @return the maximum of {@param one} and {@param two} when coerced to this type.
-     */
-    public T max(Number one, Number two) {
-        return maxImpl(coerce(one), coerce(two));
+    public T min(T one, T two) {
+        return lt(one, two) ? one : two;
     }
 
     /**
      * @return the maximum of {@param one} and {@param two}.
      */
-    public T maxImpl(T one, T two) {
-        return gtImpl(one, two) ? one : two;
+    public T max(T one, T two) {
+        return gt(one, two) ? one : two;
+    }
+
+    /**
+     * @return if {@param value} is less than {@param min}, then {@param min}.
+     *         else if {@param value} is greater than {@param max}, then {@param max}.
+     *         or if {@param value} falls between these two values, then {@param value}.
+     */
+    public T clamp(T value, T min, T max) {
+        return lt(value, min) ? min : (gt(value, max) ? max : value);
+    }
+
+    /**
+     * @return the greatest common divisor of {@code abs(one)} and {@code abs(two)}.
+     */
+    public abstract T gcd(T one, T two);
+
+    /**
+     * @return the least common multiple of {@code abs(one)} and {@code abs(two)},
+     *         or {@code -1} if it is out of the bounds of this NumberType.
+     */
+    public T lcm(T one, T two) {
+        // Special case zero
+        if (eq(one, zero) || eq(two, zero))
+            return zero;
+
+        // Take the absolute of one and two
+        one = absolute(one);
+        two = absolute(two);
+
+        // Check for overflow
+        if (lte(one, zero) || lte(two, zero)) {
+            if (eq(one, this.one))
+                return two;
+            if (eq(two, this.one))
+                return one;
+            return coerce(-1);
+        }
+
+        // Reduce one such that one * two is the LCM
+        T gcd = gcd(one, two);
+        one = div(one, gcd);
+
+        // Check for overflow
+        if (maxValue != null && !eq(one, zero) && gt(two, div(maxValue, one)))
+            return coerce(-1);
+
+        return mul(one, two);
+    }
+
+    /**
+     * @param step1 The first step
+     * @param step2 The second step
+     * @param advantage The advantage of {@param step1} over {@param step2}
+     *
+     * @return the smallest positive value of {@code step1 * x1 - advantage} and {@code step2 * x2} that satisfies
+     *         the equation {@code step1 * x1 - advantage = step2 * x2}.
+     *         Returns {@code -1} if the equation cannot be satisfied, or the equation overflows
+     */
+    public T offsetLCM(T step1, T step2, T advantage) {
+        // If there is no advantage, then just do a regular LCM
+        if (eq(advantage, zero))
+            return lcm(step1, step2);
+
+        // The steps should be positive
+        step1 = absolute(step1);
+        step2 = absolute(step2);
+        if (lte(step1, zero) || lte(step2, zero)) {
+            // Absolute overflowed
+            return coerce(-1);
+        }
+
+        // Check that there is a solution
+        T gcd = gcd(step1, step2);
+        if (!isMultiple(advantage, gcd))
+            return coerce(-1);
+
+        // Make sure left and right start >= 0
+        T left = advantage;
+        T right = zero;
+        if (lt(left, zero)) {
+            T negatedAdvantage = negate(advantage);
+            if (lte(negatedAdvantage, zero)) {
+                // Negation overflowed
+                return coerce(-1);
+            }
+
+            T multiplesToAdd = divRoundUp(negatedAdvantage, step1);
+            left = add(left, mul(multiplesToAdd, step1));
+        }
+
+        // Brute force a solution
+        while (!eq(left, right)) { // TODO : Brute force :(
+            if (lt(left, right)) {
+                left = add(left, step1);
+
+                // Add overflowed
+                if (lte(left, zero))
+                    return coerce(-1);
+            } else {
+                right = add(right, step2);
+
+                // Add overflowed
+                if (lte(right, zero))
+                    return coerce(-1);
+            }
+        }
+
+        return left;
     }
 
     @Override
@@ -389,113 +396,62 @@ public abstract class NumberType<T extends Number> {
         return getClass().getSimpleName();
     }
 
-    /**
-     * @return the number type of {@param number}.
-     */
-    public static NumberType<?> get(Number number) {
-        Checks.assertNonNull(number, "number");
+    public static abstract class IntegerNumberType<T extends Number> extends NumberType<T> {
 
-        NumberType type = BOX_TO_TYPE.get(number.getClass());
-        Checks.assertThat(type != null, "Unsupported number type " + number.getClass());
+        protected IntegerNumberType(
+                Class<?> primitiveClass,
+                Class<T> boxClass,
+                int byteCount,
+                T minValue,
+                T maxValue) {
 
-        return type;
-    }
-
-    /**
-     * Find the number type with the lowest byte count that is able
-     * to represent all of {@param numbers} without loss of precision.
-     */
-    public static NumberType<?> getDominantType(Number... numbers) {
-        Checks.assertArrayNonNull(numbers, "numbers");
-        Checks.assertTrue(numbers.length > 0, "numbers must be of at least length 1");
-
-        NumberType<?>[] types = new NumberType<?>[numbers.length];
-        for (int index = 0; index < numbers.length; ++index) {
-            types[index] = get(numbers[index]);
-        }
-
-        return getDominantType(types);
-    }
-
-    /**
-     * Find the number type with the lowest byte count that is able
-     * to represent all of {@param numbers} without loss of precision.
-     */
-    public static NumberType<?> getDominantType(NumberType<?>... types) {
-        Checks.assertArrayNonNull(types, "types");
-        Checks.assertTrue(types.length > 0, "types must be of at least length 1");
-
-        NumberType<?> dominantType = types[0];
-
-        for(int index = 1; index < types.length; ++index) {
-            NumberType<?> type = types[index];
-
-            // If both integer or both floating point
-            if(dominantType.isInteger() == type.isInteger()) {
-                if(type.getByteCount() > dominantType.getByteCount()) {
-                    dominantType = type;
-                }
-                continue;
-            }
-
-            // Canonicalise dominantType to the floating point, type to the integer
-            if(type.isFloatingPoint()) {
-                NumberType swap = type;
-                type = dominantType;
-                dominantType = swap;
-            }
-
-            // Promote dominantType to a type that can represent, if possible
-            NumberType<?> next = dominantType.getNextHigherPrecisionType();
-            while (type.getIntegerBits() > dominantType.getIntegerBits() && next != null) {
-                dominantType = next;
-                next = dominantType.getNextHigherPrecisionType();
-            }
-        }
-
-        return dominantType;
-    }
-
-    /**
-     * @return All NumberTypes that can losslessly represent all values of the same type as {@param value}.
-     *         Includes the type of {@param value} in the returned list.
-     */
-    public static Set<NumberType<?>> getAllCompatible(Number value) {
-        return getAllCompatible(get(value));
-    }
-
-    /**
-     * @return All NumberTypes that can losslessly represent all values of type {@param type}.
-     *         Includes {@param type} in the returned list.
-     */
-    public static Set<NumberType<?>> getAllCompatible(NumberType<?> type) {
-        Set<NumberType<?>> compatible = new HashSet<>();
-        compatible.add(type);
-
-        if (type.isInteger()) {
-            for (NumberType<?> other : ALL) {
-                if (other.getIntegerBits() < type.getIntegerBits())
-                    continue;
-
-                compatible.add(other);
-            }
-        } else {
-            for (NumberType<?> other : FLOAT_TYPES) {
-                if (other.getByteCount() < type.getByteCount())
-                    continue;
-
-                compatible.add(other);
-            }
-        }
-
-        return compatible;
-    }
-
-    private static final class ByteType extends NumberType<Byte> {
-
-        private ByteType() {
             super(
-                byte.class, Byte.class, 1, false, 8,
+                primitiveClass, boxClass,
+                byteCount, false,
+                (byteCount == Integer.MAX_VALUE ? Integer.MAX_VALUE : byteCount * 8),
+                minValue, maxValue
+            );
+        }
+
+        /**
+         * Uses Euclid's algorithm.
+         */
+        @Override
+        public T gcd(T one, T two) {
+            // TODO : Does this work for negative numbers?!?
+            while (!eq(zero, two)) {
+                T temp = two;
+                two = signedRemainder(one, two);
+                one = temp;
+            }
+            return one;
+        }
+    }
+
+    public static abstract class FloatingPointNumberType<T extends Number> extends NumberType<T> {
+
+        protected FloatingPointNumberType(
+                Class<?> primitiveClass,
+                Class<T> boxClass,
+                int byteCount,
+                int integerBitCount,
+                T minValue,
+                T maxValue) {
+
+            super(primitiveClass, boxClass, byteCount, true, integerBitCount, minValue, maxValue);
+        }
+
+        @Override
+        public T gcd(T one, T two) {
+            throw new UnsupportedOperationException("floating point greatest common divisor is unsupported");
+        }
+    }
+
+    public static final class ByteType extends IntegerNumberType<Byte> {
+
+        protected ByteType() {
+            super(
+                byte.class, Byte.class, 1,
                 Byte.MIN_VALUE, Byte.MAX_VALUE
             );
         }
@@ -506,66 +462,66 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compareImpl(Byte one, Byte two) {
+        public int compare(Byte one, Byte two) {
             return Byte.compare(one, two);
         }
 
         @Override
-        public boolean gteImpl(Byte one, Byte two) {
+        public boolean gte(Byte one, Byte two) {
             return one >= two;
         }
 
         @Override
-        public boolean gtImpl(Byte one, Byte two) {
+        public boolean gt(Byte one, Byte two) {
             return one > two;
         }
 
         @Override
-        public boolean lteImpl(Byte one, Byte two) {
+        public boolean lte(Byte one, Byte two) {
             return one <= two;
         }
 
         @Override
-        public boolean ltImpl(Byte one, Byte two) {
+        public boolean lt(Byte one, Byte two) {
             return one < two;
         }
 
         @Override
-        public Byte addImpl(Byte one, Byte two) {
+        public Byte add(Byte one, Byte two) {
             return (byte) (one + two);
         }
 
         @Override
-        public Byte subtractImpl(Byte one, Byte two) {
+        public Byte subtract(Byte one, Byte two) {
             return (byte) (one - two);
         }
 
         @Override
-        public Byte mulImpl(Byte one, Byte two) {
+        public Byte mul(Byte one, Byte two) {
             return (byte) (one * two);
         }
 
         @Override
-        public Byte divImpl(Byte one, Byte two) {
+        public Byte div(Byte one, Byte two) {
             return (byte) (one / two);
         }
 
         @Override
-        public Byte remainderImpl(Byte one, Byte two) {
+        public Byte signedRemainder(Byte one, Byte two) {
             return (byte) (one % two);
         }
 
         @Override
-        public Byte absoluteImpl(Byte number) {
+        public Byte absolute(Byte number) {
             return (byte) Math.abs(number);
         }
     }
 
-    private static final class ShortType extends NumberType<Short> {
+    public static final class ShortType extends IntegerNumberType<Short> {
 
-        private ShortType() {
+        protected ShortType() {
             super(
-                short.class, Short.class, 2, false, 16,
+                short.class, Short.class, 2,
                 Short.MIN_VALUE, Short.MAX_VALUE
             );
         }
@@ -576,66 +532,66 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compareImpl(Short one, Short two) {
+        public int compare(Short one, Short two) {
             return Short.compare(one, two);
         }
 
         @Override
-        public boolean gteImpl(Short one, Short two) {
+        public boolean gte(Short one, Short two) {
             return one >= two;
         }
 
         @Override
-        public boolean gtImpl(Short one, Short two) {
+        public boolean gt(Short one, Short two) {
             return one > two;
         }
 
         @Override
-        public boolean lteImpl(Short one, Short two) {
+        public boolean lte(Short one, Short two) {
             return one <= two;
         }
 
         @Override
-        public boolean ltImpl(Short one, Short two) {
+        public boolean lt(Short one, Short two) {
             return one < two;
         }
 
         @Override
-        public Short addImpl(Short one, Short two) {
+        public Short add(Short one, Short two) {
             return (short) (one + two);
         }
 
         @Override
-        public Short subtractImpl(Short one, Short two) {
+        public Short subtract(Short one, Short two) {
             return (short) (one - two);
         }
 
         @Override
-        public Short mulImpl(Short one, Short two) {
+        public Short mul(Short one, Short two) {
             return (short) (one * two);
         }
 
         @Override
-        public Short divImpl(Short one, Short two) {
+        public Short div(Short one, Short two) {
             return (short) (one / two);
         }
 
         @Override
-        public Short remainderImpl(Short one, Short two) {
+        public Short signedRemainder(Short one, Short two) {
             return (short) (one % two);
         }
 
         @Override
-        public Short absoluteImpl(Short number) {
+        public Short absolute(Short number) {
             return (short) Math.abs(number);
         }
     }
 
-    private static final class IntType extends NumberType<Integer> {
+    public static final class IntType extends IntegerNumberType<Integer> {
 
-        private IntType() {
+        protected IntType() {
             super(
-                int.class, Integer.class, 4, false, 32,
+                int.class, Integer.class, 4,
                 Integer.MIN_VALUE, Integer.MAX_VALUE
             );
         }
@@ -646,66 +602,66 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compareImpl(Integer one, Integer two) {
+        public int compare(Integer one, Integer two) {
             return Integer.compare(one, two);
         }
 
         @Override
-        public boolean gteImpl(Integer one, Integer two) {
+        public boolean gte(Integer one, Integer two) {
             return one >= two;
         }
 
         @Override
-        public boolean gtImpl(Integer one, Integer two) {
+        public boolean gt(Integer one, Integer two) {
             return one > two;
         }
 
         @Override
-        public boolean lteImpl(Integer one, Integer two) {
+        public boolean lte(Integer one, Integer two) {
             return one <= two;
         }
 
         @Override
-        public boolean ltImpl(Integer one, Integer two) {
+        public boolean lt(Integer one, Integer two) {
             return one < two;
         }
 
         @Override
-        public Integer addImpl(Integer one, Integer two) {
+        public Integer add(Integer one, Integer two) {
             return one + two;
         }
 
         @Override
-        public Integer subtractImpl(Integer one, Integer two) {
+        public Integer subtract(Integer one, Integer two) {
             return one - two;
         }
 
         @Override
-        public Integer mulImpl(Integer one, Integer two) {
+        public Integer mul(Integer one, Integer two) {
             return one * two;
         }
 
         @Override
-        public Integer divImpl(Integer one, Integer two) {
+        public Integer div(Integer one, Integer two) {
             return one / two;
         }
 
         @Override
-        public Integer remainderImpl(Integer one, Integer two) {
+        public Integer signedRemainder(Integer one, Integer two) {
             return one % two;
         }
 
         @Override
-        public Integer absoluteImpl(Integer number) {
+        public Integer absolute(Integer number) {
             return Math.abs(number);
         }
     }
 
-    private static final class LongType extends NumberType<Long> {
+    public static final class LongType extends IntegerNumberType<Long> {
 
-        private LongType() {
+        protected LongType() {
             super(
-                long.class, Long.class, 8, false, 64,
+                long.class, Long.class, 8,
                 Long.MIN_VALUE, Long.MAX_VALUE
             );
         }
@@ -716,67 +672,66 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compareImpl(Long one, Long two) {
+        public int compare(Long one, Long two) {
             return Long.compare(one, two);
         }
 
         @Override
-        public boolean gteImpl(Long one, Long two) {
+        public boolean gte(Long one, Long two) {
             return one >= two;
         }
 
         @Override
-        public boolean gtImpl(Long one, Long two) {
+        public boolean gt(Long one, Long two) {
             return one > two;
         }
 
         @Override
-        public boolean lteImpl(Long one, Long two) {
+        public boolean lte(Long one, Long two) {
             return one <= two;
         }
 
         @Override
-        public boolean ltImpl(Long one, Long two) {
+        public boolean lt(Long one, Long two) {
             return one < two;
         }
 
         @Override
-        public Long addImpl(Long one, Long two) {
+        public Long add(Long one, Long two) {
             return one + two;
         }
 
         @Override
-        public Long subtractImpl(Long one, Long two) {
+        public Long subtract(Long one, Long two) {
             return one - two;
         }
 
         @Override
-        public Long mulImpl(Long one, Long two) {
+        public Long mul(Long one, Long two) {
             return one * two;
         }
 
         @Override
-        public Long divImpl(Long one, Long two) {
+        public Long div(Long one, Long two) {
             return one / two;
         }
 
         @Override
-        public Long remainderImpl(Long one, Long two) {
+        public Long signedRemainder(Long one, Long two) {
             return one % two;
         }
 
         @Override
-        public Long absoluteImpl(Long number) {
+        public Long absolute(Long number) {
             return Math.abs(number);
         }
     }
 
-    private static final class BigIntType extends NumberType<BigInteger> {
+    public static final class BigIntType extends IntegerNumberType<BigInteger> {
 
-        private BigIntType() {
+        protected BigIntType() {
             super(
-                null, BigInteger.class, Integer.MAX_VALUE, false, Integer.MAX_VALUE,
-                null, null
+                null, BigInteger.class, Integer.MAX_VALUE, null, null
             );
         }
 
@@ -790,46 +745,51 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compareImpl(BigInteger one, BigInteger two) {
+        public int compare(BigInteger one, BigInteger two) {
             return one.compareTo(two);
         }
 
         @Override
-        public BigInteger addImpl(BigInteger one, BigInteger two) {
+        public BigInteger add(BigInteger one, BigInteger two) {
             return one.add(two);
         }
 
         @Override
-        public BigInteger subtractImpl(BigInteger one, BigInteger two) {
+        public BigInteger subtract(BigInteger one, BigInteger two) {
             return one.subtract(two);
         }
 
         @Override
-        public BigInteger mulImpl(BigInteger one, BigInteger two) {
+        public BigInteger mul(BigInteger one, BigInteger two) {
             return one.multiply(two);
         }
 
         @Override
-        public BigInteger divImpl(BigInteger one, BigInteger two) {
+        public BigInteger div(BigInteger one, BigInteger two) {
             return one.divide(two);
         }
 
         @Override
-        public BigInteger remainderImpl(BigInteger one, BigInteger two) {
+        public BigInteger signedRemainder(BigInteger one, BigInteger two) {
             return one.remainder(two);
         }
 
         @Override
-        public BigInteger absoluteImpl(BigInteger number) {
+        public BigInteger absolute(BigInteger number) {
             return number.abs();
+        }
+
+        @Override
+        public BigInteger gcd(BigInteger one, BigInteger two) {
+            return one.gcd(two);
         }
     }
 
-    private static final class FloatType extends NumberType<Float> {
+    public static final class FloatType extends FloatingPointNumberType<Float> {
 
-        private FloatType() {
+        protected FloatType() {
             super(
-                float.class, Float.class, 4, true, 25,
+                float.class, Float.class, 4, 25,
                 -Float.MAX_VALUE, Float.MAX_VALUE
             );
         }
@@ -840,66 +800,66 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compareImpl(Float one, Float two) {
+        public int compare(Float one, Float two) {
             return Float.compare(one, two);
         }
 
         @Override
-        public boolean gteImpl(Float one, Float two) {
+        public boolean gte(Float one, Float two) {
             return one >= two;
         }
 
         @Override
-        public boolean gtImpl(Float one, Float two) {
+        public boolean gt(Float one, Float two) {
             return one > two;
         }
 
         @Override
-        public boolean lteImpl(Float one, Float two) {
+        public boolean lte(Float one, Float two) {
             return one <= two;
         }
 
         @Override
-        public boolean ltImpl(Float one, Float two) {
+        public boolean lt(Float one, Float two) {
             return one < two;
         }
 
         @Override
-        public Float addImpl(Float one, Float two) {
+        public Float add(Float one, Float two) {
             return one + two;
         }
 
         @Override
-        public Float subtractImpl(Float one, Float two) {
+        public Float subtract(Float one, Float two) {
             return one - two;
         }
 
         @Override
-        public Float mulImpl(Float one, Float two) {
+        public Float mul(Float one, Float two) {
             return one * two;
         }
 
         @Override
-        public Float divImpl(Float one, Float two) {
+        public Float div(Float one, Float two) {
             return one / two;
         }
 
         @Override
-        public Float remainderImpl(Float one, Float two) {
+        public Float signedRemainder(Float one, Float two) {
             return one % two;
         }
 
         @Override
-        public Float absoluteImpl(Float number) {
+        public Float absolute(Float number) {
             return Math.abs(number);
         }
     }
 
-    private static final class DoubleType extends NumberType<Double> {
+    public static final class DoubleType extends FloatingPointNumberType<Double> {
 
-        private DoubleType() {
+        protected DoubleType() {
             super(
-                double.class, Double.class, 8, true, 54,
+                double.class, Double.class, 8, 54,
                 -Double.MAX_VALUE, Double.MAX_VALUE
             );
         }
@@ -910,66 +870,66 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compareImpl(Double one, Double two) {
+        public int compare(Double one, Double two) {
             return Double.compare(one, two);
         }
 
         @Override
-        public boolean gteImpl(Double one, Double two) {
+        public boolean gte(Double one, Double two) {
             return one >= two;
         }
 
         @Override
-        public boolean gtImpl(Double one, Double two) {
+        public boolean gt(Double one, Double two) {
             return one > two;
         }
 
         @Override
-        public boolean lteImpl(Double one, Double two) {
+        public boolean lte(Double one, Double two) {
             return one <= two;
         }
 
         @Override
-        public boolean ltImpl(Double one, Double two) {
+        public boolean lt(Double one, Double two) {
             return one < two;
         }
 
         @Override
-        public Double addImpl(Double one, Double two) {
+        public Double add(Double one, Double two) {
             return one + two;
         }
 
         @Override
-        public Double subtractImpl(Double one, Double two) {
+        public Double subtract(Double one, Double two) {
             return one - two;
         }
 
         @Override
-        public Double mulImpl(Double one, Double two) {
+        public Double mul(Double one, Double two) {
             return one * two;
         }
 
         @Override
-        public Double divImpl(Double one, Double two) {
+        public Double div(Double one, Double two) {
             return one / two;
         }
 
         @Override
-        public Double remainderImpl(Double one, Double two) {
+        public Double signedRemainder(Double one, Double two) {
             return one % two;
         }
 
         @Override
-        public Double absoluteImpl(Double number) {
+        public Double absolute(Double number) {
             return Math.abs(number);
         }
     }
 
-    private static final class BigDecimalType extends NumberType<BigDecimal> {
+    public static final class BigDecimalType extends FloatingPointNumberType<BigDecimal> {
 
-        private BigDecimalType() {
+        protected BigDecimalType() {
             super(
-                null, BigDecimal.class, Integer.MAX_VALUE, true, Integer.MAX_VALUE,
+                null, BigDecimal.class, Integer.MAX_VALUE, Integer.MAX_VALUE,
                 null, null
             );
         }
@@ -986,37 +946,37 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public int compareImpl(BigDecimal one, BigDecimal two) {
+        public int compare(BigDecimal one, BigDecimal two) {
             return one.compareTo(two);
         }
 
         @Override
-        public BigDecimal addImpl(BigDecimal one, BigDecimal two) {
+        public BigDecimal add(BigDecimal one, BigDecimal two) {
             return one.add(two);
         }
 
         @Override
-        public BigDecimal subtractImpl(BigDecimal one, BigDecimal two) {
+        public BigDecimal subtract(BigDecimal one, BigDecimal two) {
             return one.subtract(two);
         }
 
         @Override
-        public BigDecimal mulImpl(BigDecimal one, BigDecimal two) {
+        public BigDecimal mul(BigDecimal one, BigDecimal two) {
             return one.multiply(two);
         }
 
         @Override
-        public BigDecimal divImpl(BigDecimal one, BigDecimal two) {
+        public BigDecimal div(BigDecimal one, BigDecimal two) {
             throw new UnsupportedOperationException("BigDecimal division is unsupported");
         }
 
         @Override
-        public BigDecimal remainderImpl(BigDecimal one, BigDecimal two) {
-            throw new UnsupportedOperationException("BigDecimal remainder is unsupported");
+        public BigDecimal signedRemainder(BigDecimal one, BigDecimal two) {
+            throw new UnsupportedOperationException("BigDecimal signedRemainder is unsupported");
         }
 
         @Override
-        public BigDecimal absoluteImpl(BigDecimal number) {
+        public BigDecimal absolute(BigDecimal number) {
             return number.abs();
         }
     }

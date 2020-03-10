@@ -1,6 +1,6 @@
 package net.paddyl.constraints.set;
 
-import net.paddyl.util.NumberType;
+import net.paddyl.util.NumberTypes;
 
 /**
  * Inclusive range of shorts.
@@ -11,7 +11,7 @@ public class ShortRange extends NumberRange<ShortRange, Short> {
     public static final ShortRange ALL = new ShortRange(Short.MIN_VALUE, Short.MAX_VALUE, null);
 
     public ShortRange(Short min, Short max, Short step) {
-        super(NumberType.SHORT, min, max, step);
+        super(NumberTypes.SHORT, min, max, step);
     }
 
     /**
@@ -20,7 +20,7 @@ public class ShortRange extends NumberRange<ShortRange, Short> {
     public static class ShortRangeFactory extends NumberRangeFactory<ShortRange, Short> {
 
         public ShortRangeFactory() {
-            super(NumberType.SHORT, ShortRange.class);
+            super(NumberTypes.SHORT, ShortRange.class);
         }
 
         @Override

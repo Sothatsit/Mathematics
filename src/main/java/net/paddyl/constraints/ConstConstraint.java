@@ -7,18 +7,25 @@ import net.paddyl.constraints.set.ValueSet;
  */
 public interface ConstConstraint<S extends ValueSet<S, V>, V> {
 
-    public S tryReduce(S range);
+    /**
+     * Attempts to reduce the range of possible values {@param set} by
+     * removing any entries from the set that do not match this constraint.
+     *
+     * Should _never_ return a set with added entries. The returned set
+     * should always be a subset of the input {@param set}.
+     */
+    public S tryReduce(S set);
 
     /**
      * Repeatedly try to reduce {@param range} until it no longer changes.
      */
-    public default S bruteReduce(S range) {
+    public default S bruteReduce(S set) {
         S last;
         do {
-            last = range;
-            range = tryReduce(last);
-        } while (!last.equals(range));
+            last = set;
+            set = tryReduce(last);
+        } while (!last.equals(set));
 
-        return range;
+        return set;
     }
 }

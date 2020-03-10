@@ -1,6 +1,6 @@
 package net.paddyl.constraints.set;
 
-import net.paddyl.util.NumberType;
+import net.paddyl.util.NumberTypes;
 
 /**
  * Inclusive range of longs.
@@ -11,7 +11,7 @@ public class LongRange extends NumberRange<LongRange, Long> {
     public static final LongRange ALL = new LongRange(Long.MIN_VALUE, Long.MAX_VALUE, null);
 
     public LongRange(Long min, Long max, Long step) {
-        super(NumberType.LONG, min, max, step);
+        super(NumberTypes.LONG, min, max, step);
     }
 
     /**
@@ -20,7 +20,7 @@ public class LongRange extends NumberRange<LongRange, Long> {
     public static class LongRangeFactory extends NumberRangeFactory<LongRange, Long> {
 
         public LongRangeFactory() {
-            super(NumberType.LONG, LongRange.class);
+            super(NumberTypes.LONG, LongRange.class);
         }
 
         @Override

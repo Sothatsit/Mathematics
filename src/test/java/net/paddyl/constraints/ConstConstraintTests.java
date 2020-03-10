@@ -3,7 +3,6 @@ package net.paddyl.constraints;
 import static org.junit.Assert.*;
 
 import net.paddyl.constraints.set.*;
-import net.paddyl.util.NumberType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -13,7 +12,7 @@ import java.util.Collection;
 
 @RunWith(Parameterized.class)
 @SuppressWarnings("unchecked")
-public class ConstConstraintTests {
+public class ConstConstraintTests extends NumberRangeTestBase {
 
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> data() {
@@ -25,29 +24,11 @@ public class ConstConstraintTests {
         });
     }
 
-    private final NumberType numberType;
-    private final Number MAX;
-    private final Number MAX_M1;
-    private final Number MIN;
-    private final Number MIN_P1;
-
-    private final ValueSetFactory factory;
-    private final ValueSet ALL;
-    private final ValueSet EMPTY;
-
     private CompTestCase[] compTestCases = null;
     private MultiTestCase[] multiTestCases = null;
 
     public ConstConstraintTests(String name, NumberRangeFactory factory) {
-        this.numberType = factory.type;
-        this.MAX = numberType.getMaxValue();
-        this.MIN = numberType.getMinValue();
-        this.MIN_P1 = numberType.add(MIN, 1);
-        this.MAX_M1 = numberType.add(MAX, -1);
-
-        this.factory = factory;
-        this.ALL = factory.all();
-        this.EMPTY = factory.empty();
+        super(name, factory);
     }
 
     private CompTestCase[] getCompTestCases() {
@@ -229,6 +210,11 @@ public class ConstConstraintTests {
             assertEquals(of(2, MAX_M1), constraint.bruteReduce(ALL));
         }
 
+        { // x * 2 >= 3
+            ConstConstraint constraint = domain(mul(2), gte(3));
+            assertEquals(of(2, 10), constraint.bruteReduce(of(-10, 10)));
+        }
+
         { // x - 1 <= 3
             ConstConstraint constraint = domain(sub1, lte(3));
             assertEquals(of(MIN_P1, 4), constraint.bruteReduce(ALL));
@@ -310,72 +296,5 @@ public class ConstConstraintTests {
             this.or = expected;
             return this;
         }
-    }
-
-    public Number coerce(Number value) {
-        return numberType.coerce(value);
-    }
-
-    public ValueSet single(Number value) {
-        return factory.single(coerce(value));
-    }
-
-    public ValueSet of(Number from, Number to) {
-        return factory.range(coerce(from), coerce(to));
-    }
-
-    public ValueSet above(Number value) {
-        return factory.aboveIncl(coerce(value));
-    }
-
-    public ValueSet aboveNotIncl(Number value) {
-        return factory.above(coerce(value));
-    }
-
-    public ValueSet below(Number value) {
-        return factory.belowIncl(coerce(value));
-    }
-
-    public ValueSet belowNotIncl(Number value) {
-        return factory.below(coerce(value));
-    }
-
-    public ConstConstraint gte(Number value) {
-        return factory.gte(coerce(value));
-    }
-
-    public ConstConstraint gt(Number value) {
-        return factory.gt(coerce(value));
-    }
-
-    public ConstConstraint lte(Number value) {
-        return factory.lte(coerce(value));
-    }
-
-    public ConstConstraint lt(Number value) {
-        return factory.lt(coerce(value));
-    }
-
-    public ConstConstraint eq(Number value) {
-        return factory.eq(coerce(value));
-    }
-
-    public final ConstConstraint and(ConstConstraint... constraints) {
-        return factory.and(constraints);
-    }
-
-    public final ConstConstraint or(ConstConstraint... constraints) {
-        return factory.or(constraints);
-    }
-
-    public ConstConstraint<?, ?> domain(
-            ConstOperator<?, ?> operator,
-            ConstConstraint<?, ?> constraint) {
-
-        return factory.domain(operator, constraint);
-    }
-
-    public ConstOperator<LongRange, Long> add(Number value) {
-        return factory.add(coerce(value));
     }
 }

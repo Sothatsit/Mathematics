@@ -15,141 +15,141 @@ public class NumbersTest {
 
     @Test
     public void testNumberTypeGet() {
-        assertEquals(NumberType.BYTE,        NumberType.get((byte) 0));
-        assertEquals(NumberType.SHORT,       NumberType.get((short) 0));
-        assertEquals(NumberType.INT,         NumberType.get(0));
-        assertEquals(NumberType.LONG,        NumberType.get(0L));
-        assertEquals(NumberType.BIG_INT,     NumberType.get(BigInteger.ZERO));
-        assertEquals(NumberType.FLOAT,       NumberType.get(0.0f));
-        assertEquals(NumberType.DOUBLE,      NumberType.get(0.0d));
-        assertEquals(NumberType.BIG_DECIMAL, NumberType.get(BigDecimal.ZERO));
+        assertEquals(NumberTypes.BYTE,        NumberTypes.get((byte) 0));
+        assertEquals(NumberTypes.SHORT,       NumberTypes.get((short) 0));
+        assertEquals(NumberTypes.INT,         NumberTypes.get(0));
+        assertEquals(NumberTypes.LONG,        NumberTypes.get(0L));
+        assertEquals(NumberTypes.BIG_INT,     NumberTypes.get(BigInteger.ZERO));
+        assertEquals(NumberTypes.FLOAT,       NumberTypes.get(0.0f));
+        assertEquals(NumberTypes.DOUBLE,      NumberTypes.get(0.0d));
+        assertEquals(NumberTypes.BIG_DECIMAL, NumberTypes.get(BigDecimal.ZERO));
     }
 
     private static void testType(NumberType<?> expected, Number... numbers) {
         assertEquals(expected, Num.type(numbers));
-        assertEquals(expected, NumberType.getDominantType(numbers));
+        assertEquals(expected, NumberTypes.getDominantType(numbers));
     }
 
     @Test
     public void testGetNextHigherPrecisionType() {
-        assertEquals(NumberType.SHORT, NumberType.BYTE.getNextHigherPrecisionType());
-        assertEquals(NumberType.INT, NumberType.SHORT.getNextHigherPrecisionType());
-        assertEquals(NumberType.LONG, NumberType.INT.getNextHigherPrecisionType());
-        assertEquals(NumberType.BIG_INT, NumberType.LONG.getNextHigherPrecisionType());
-        assertEquals(null, NumberType.BIG_INT.getNextHigherPrecisionType());
+        assertEquals(NumberTypes.SHORT, NumberTypes.getNextHigherPrecisionType(NumberTypes.BYTE));
+        assertEquals(NumberTypes.INT, NumberTypes.getNextHigherPrecisionType(NumberTypes.SHORT));
+        assertEquals(NumberTypes.LONG, NumberTypes.getNextHigherPrecisionType(NumberTypes.INT));
+        assertEquals(NumberTypes.BIG_INT, NumberTypes.getNextHigherPrecisionType(NumberTypes.LONG));
+        assertEquals(null, NumberTypes.getNextHigherPrecisionType(NumberTypes.BIG_INT));
 
-        assertEquals(NumberType.DOUBLE, NumberType.FLOAT.getNextHigherPrecisionType());
-        assertEquals(NumberType.BIG_DECIMAL, NumberType.DOUBLE.getNextHigherPrecisionType());
-        assertEquals(null, NumberType.BIG_DECIMAL.getNextHigherPrecisionType());
+        assertEquals(NumberTypes.DOUBLE, NumberTypes.getNextHigherPrecisionType(NumberTypes.FLOAT));
+        assertEquals(NumberTypes.BIG_DECIMAL, NumberTypes.getNextHigherPrecisionType(NumberTypes.DOUBLE));
+        assertEquals(null, NumberTypes.getNextHigherPrecisionType(NumberTypes.BIG_DECIMAL));
     }
 
     @Test
     public void testGetNextLowerPrecisionType() {
-        assertEquals(null, NumberType.BYTE.getNextLowerPrecisionType());
-        assertEquals(NumberType.BYTE, NumberType.SHORT.getNextLowerPrecisionType());
-        assertEquals(NumberType.SHORT, NumberType.INT.getNextLowerPrecisionType());
-        assertEquals(NumberType.INT, NumberType.LONG.getNextLowerPrecisionType());
-        assertEquals(NumberType.LONG, NumberType.BIG_INT.getNextLowerPrecisionType());
+        assertEquals(null, NumberTypes.getNextLowerPrecisionType(NumberTypes.BYTE));
+        assertEquals(NumberTypes.BYTE, NumberTypes.getNextLowerPrecisionType(NumberTypes.SHORT));
+        assertEquals(NumberTypes.SHORT, NumberTypes.getNextLowerPrecisionType(NumberTypes.INT));
+        assertEquals(NumberTypes.INT, NumberTypes.getNextLowerPrecisionType(NumberTypes.LONG));
+        assertEquals(NumberTypes.LONG, NumberTypes.getNextLowerPrecisionType(NumberTypes.BIG_INT));
 
-        assertEquals(null, NumberType.FLOAT.getNextLowerPrecisionType());
-        assertEquals(NumberType.FLOAT, NumberType.DOUBLE.getNextLowerPrecisionType());
-        assertEquals(NumberType.DOUBLE, NumberType.BIG_DECIMAL.getNextLowerPrecisionType());
+        assertEquals(null, NumberTypes.getNextLowerPrecisionType(NumberTypes.FLOAT));
+        assertEquals(NumberTypes.FLOAT, NumberTypes.getNextLowerPrecisionType(NumberTypes.DOUBLE));
+        assertEquals(NumberTypes.DOUBLE, NumberTypes.getNextLowerPrecisionType(NumberTypes.BIG_DECIMAL));
     }
 
     @Test
     public void testNumberTypeGetDominantType() {
         assertFails(() -> Num.type());
-        assertFails(() -> NumberType.getDominantType(new Number[0]));
+        assertFails(() -> NumberTypes.getDominantType(new Number[0]));
         assertFails(() -> Num.type((Number[]) null));
-        assertFails(() -> NumberType.getDominantType((Number[]) null));
-        assertFails(() -> NumberType.getDominantType(new NumberType[0]));
-        assertFails(() -> NumberType.getDominantType((NumberType[]) null));
+        assertFails(() -> NumberTypes.getDominantType((Number[]) null));
+        assertFails(() -> NumberTypes.getDominantType(new NumberType[0]));
+        assertFails(() -> NumberTypes.getDominantType((NumberType[]) null));
 
         // One number
-        testType(NumberType.BYTE,        (byte) 0);
-        testType(NumberType.SHORT,       (short) 0);
-        testType(NumberType.INT,         0);
-        testType(NumberType.LONG,        0L);
-        testType(NumberType.BIG_INT,     BigInteger.ZERO);
-        testType(NumberType.FLOAT,       0.0f);
-        testType(NumberType.DOUBLE,      0.0d);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO);
+        testType(NumberTypes.BYTE,        (byte) 0);
+        testType(NumberTypes.SHORT,       (short) 0);
+        testType(NumberTypes.INT,         0);
+        testType(NumberTypes.LONG,        0L);
+        testType(NumberTypes.BIG_INT,     BigInteger.ZERO);
+        testType(NumberTypes.FLOAT,       0.0f);
+        testType(NumberTypes.DOUBLE,      0.0d);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO);
 
         // Two integer numbers
-        testType(NumberType.BYTE,    (byte) 0, (byte) 1);
-        testType(NumberType.SHORT,   (short) 0, (short) 1);
-        testType(NumberType.SHORT,   (short) 0, (byte) 1);
-        testType(NumberType.INT,     0, (byte) 1);
-        testType(NumberType.INT,     0, (short) 1);
-        testType(NumberType.INT,     0, 1);
-        testType(NumberType.LONG,    0L, (short) 1);
-        testType(NumberType.LONG,    0L, (byte) 1);
-        testType(NumberType.LONG,    0L, 1);
-        testType(NumberType.LONG,    0L, 1L);
-        testType(NumberType.BIG_INT, BigInteger.ZERO, (short) 1);
-        testType(NumberType.BIG_INT, BigInteger.ZERO, (byte) 1);
-        testType(NumberType.BIG_INT, BigInteger.ZERO, 1);
-        testType(NumberType.BIG_INT, BigInteger.ZERO, 1L);
-        testType(NumberType.BIG_INT, BigInteger.ZERO, BigInteger.ONE);
+        testType(NumberTypes.BYTE,    (byte) 0, (byte) 1);
+        testType(NumberTypes.SHORT,   (short) 0, (short) 1);
+        testType(NumberTypes.SHORT,   (short) 0, (byte) 1);
+        testType(NumberTypes.INT,     0, (byte) 1);
+        testType(NumberTypes.INT,     0, (short) 1);
+        testType(NumberTypes.INT,     0, 1);
+        testType(NumberTypes.LONG,    0L, (short) 1);
+        testType(NumberTypes.LONG,    0L, (byte) 1);
+        testType(NumberTypes.LONG,    0L, 1);
+        testType(NumberTypes.LONG,    0L, 1L);
+        testType(NumberTypes.BIG_INT, BigInteger.ZERO, (short) 1);
+        testType(NumberTypes.BIG_INT, BigInteger.ZERO, (byte) 1);
+        testType(NumberTypes.BIG_INT, BigInteger.ZERO, 1);
+        testType(NumberTypes.BIG_INT, BigInteger.ZERO, 1L);
+        testType(NumberTypes.BIG_INT, BigInteger.ZERO, BigInteger.ONE);
 
         // Two floating point numbers
-        testType(NumberType.FLOAT,       0.0f, 1.0f);
-        testType(NumberType.DOUBLE,      0.0d, 1.0f);
-        testType(NumberType.DOUBLE,      0.0d, 1.0d);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, 1.0f);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, 1.0d);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, BigDecimal.ONE);
+        testType(NumberTypes.FLOAT,       0.0f, 1.0f);
+        testType(NumberTypes.DOUBLE,      0.0d, 1.0f);
+        testType(NumberTypes.DOUBLE,      0.0d, 1.0d);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, 1.0f);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, 1.0d);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, BigDecimal.ONE);
 
         // One floating point number, one integer number
-        testType(NumberType.FLOAT,       0.0f, (byte) 1);
-        testType(NumberType.FLOAT,       0.0f, (short) 1);
-        testType(NumberType.DOUBLE,      0.0f, 1);
-        testType(NumberType.DOUBLE,      0.0d, (byte) 1);
-        testType(NumberType.DOUBLE,      0.0d, (short) 1);
-        testType(NumberType.DOUBLE,      0.0d, 1);
-        testType(NumberType.BIG_DECIMAL, 0.0f, 1L);
-        testType(NumberType.BIG_DECIMAL, 0.0d, 1L);
-        testType(NumberType.BIG_DECIMAL, 0.0f, BigInteger.ONE);
-        testType(NumberType.BIG_DECIMAL, 0.0d, BigInteger.ONE);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, (byte) 1);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, (short) 1);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, 1);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, 1L);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, BigInteger.ONE);
+        testType(NumberTypes.FLOAT,       0.0f, (byte) 1);
+        testType(NumberTypes.FLOAT,       0.0f, (short) 1);
+        testType(NumberTypes.DOUBLE,      0.0f, 1);
+        testType(NumberTypes.DOUBLE,      0.0d, (byte) 1);
+        testType(NumberTypes.DOUBLE,      0.0d, (short) 1);
+        testType(NumberTypes.DOUBLE,      0.0d, 1);
+        testType(NumberTypes.BIG_DECIMAL, 0.0f, 1L);
+        testType(NumberTypes.BIG_DECIMAL, 0.0d, 1L);
+        testType(NumberTypes.BIG_DECIMAL, 0.0f, BigInteger.ONE);
+        testType(NumberTypes.BIG_DECIMAL, 0.0d, BigInteger.ONE);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, (byte) 1);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, (short) 1);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, 1);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, 1L);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, BigInteger.ONE);
 
         // Two floating point numbers, one integer number
-        testType(NumberType.FLOAT,       0.0f, (byte) 1, 2.0f);
-        testType(NumberType.FLOAT,       0.0f, (short) 1, 2.0f);
-        testType(NumberType.DOUBLE,      0.0f, 1, 2.0f);
-        testType(NumberType.DOUBLE,      0.0d, (byte) 1, 2.0f);
-        testType(NumberType.DOUBLE,      0.0d, (short) 1, 2.0f);
-        testType(NumberType.DOUBLE,      0.0d, 1, 2.0f);
-        testType(NumberType.BIG_DECIMAL, 0.0f, 1L, 2.0f);
-        testType(NumberType.BIG_DECIMAL, 0.0d, 1L, 2.0f);
-        testType(NumberType.BIG_DECIMAL, 0.0f, BigInteger.ONE, 2.0f);
-        testType(NumberType.BIG_DECIMAL, 0.0d, BigInteger.ONE, 2.0f);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, (byte) 1, 2.0f);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, (short) 1, 2.0f);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, 1, 2.0f);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, 1L, 2.0f);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, BigInteger.ONE, 2.0f);
+        testType(NumberTypes.FLOAT,       0.0f, (byte) 1, 2.0f);
+        testType(NumberTypes.FLOAT,       0.0f, (short) 1, 2.0f);
+        testType(NumberTypes.DOUBLE,      0.0f, 1, 2.0f);
+        testType(NumberTypes.DOUBLE,      0.0d, (byte) 1, 2.0f);
+        testType(NumberTypes.DOUBLE,      0.0d, (short) 1, 2.0f);
+        testType(NumberTypes.DOUBLE,      0.0d, 1, 2.0f);
+        testType(NumberTypes.BIG_DECIMAL, 0.0f, 1L, 2.0f);
+        testType(NumberTypes.BIG_DECIMAL, 0.0d, 1L, 2.0f);
+        testType(NumberTypes.BIG_DECIMAL, 0.0f, BigInteger.ONE, 2.0f);
+        testType(NumberTypes.BIG_DECIMAL, 0.0d, BigInteger.ONE, 2.0f);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, (byte) 1, 2.0f);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, (short) 1, 2.0f);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, 1, 2.0f);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, 1L, 2.0f);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, BigInteger.ONE, 2.0f);
 
         // Two floating point numbers, two integer numbers
-        testType(NumberType.FLOAT,       0.0f, (byte) 1, 2.0f, (byte) 3);
-        testType(NumberType.FLOAT,       0.0f, (short) 1, 2.0f, (byte) 3);
-        testType(NumberType.DOUBLE,      0.0f, 1, 2.0f, (byte) 3);
-        testType(NumberType.DOUBLE,      0.0d, (byte) 1, 2.0f, (byte) 3);
-        testType(NumberType.DOUBLE,      0.0d, (short) 1, 2.0f, (byte) 3);
-        testType(NumberType.DOUBLE,      0.0d, 1, 2.0f, (byte) 3);
-        testType(NumberType.BIG_DECIMAL, 0.0f, 1L, 2.0f, (byte) 3);
-        testType(NumberType.BIG_DECIMAL, 0.0d, 1L, 2.0f, (byte) 3);
-        testType(NumberType.BIG_DECIMAL, 0.0f, BigInteger.ONE, 2.0f, (byte) 3);
-        testType(NumberType.BIG_DECIMAL, 0.0d, BigInteger.ONE, 2.0f, (byte) 3);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, (byte) 1, 2.0f, (byte) 3);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, (short) 1, 2.0f, (byte) 3);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, 1, 2.0f, (byte) 3);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, 1L, 2.0f, (byte) 3);
-        testType(NumberType.BIG_DECIMAL, BigDecimal.ZERO, BigInteger.ONE, 2.0f, (byte) 3);
+        testType(NumberTypes.FLOAT,       0.0f, (byte) 1, 2.0f, (byte) 3);
+        testType(NumberTypes.FLOAT,       0.0f, (short) 1, 2.0f, (byte) 3);
+        testType(NumberTypes.DOUBLE,      0.0f, 1, 2.0f, (byte) 3);
+        testType(NumberTypes.DOUBLE,      0.0d, (byte) 1, 2.0f, (byte) 3);
+        testType(NumberTypes.DOUBLE,      0.0d, (short) 1, 2.0f, (byte) 3);
+        testType(NumberTypes.DOUBLE,      0.0d, 1, 2.0f, (byte) 3);
+        testType(NumberTypes.BIG_DECIMAL, 0.0f, 1L, 2.0f, (byte) 3);
+        testType(NumberTypes.BIG_DECIMAL, 0.0d, 1L, 2.0f, (byte) 3);
+        testType(NumberTypes.BIG_DECIMAL, 0.0f, BigInteger.ONE, 2.0f, (byte) 3);
+        testType(NumberTypes.BIG_DECIMAL, 0.0d, BigInteger.ONE, 2.0f, (byte) 3);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, (byte) 1, 2.0f, (byte) 3);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, (short) 1, 2.0f, (byte) 3);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, 1, 2.0f, (byte) 3);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, 1L, 2.0f, (byte) 3);
+        testType(NumberTypes.BIG_DECIMAL, BigDecimal.ZERO, BigInteger.ONE, 2.0f, (byte) 3);
     }
 
     /**
@@ -157,10 +157,12 @@ public class NumbersTest {
      * integers within its {@link NumberType#getIntegerBits()}.
      */
     @Test
+    @SuppressWarnings("unchecked")
     public void testGetIntegerBits() {
         BigInteger two = BigInteger.valueOf(2);
+        NumberType<BigInteger> bigIntType = NumberTypes.BIG_INT;
 
-        for (NumberType<?> type : NumberType.ALL) {
+        for (NumberType type : NumberTypes.ALL) {
             if (type.getIntegerBits() == Integer.MAX_VALUE)
                 continue;
 
@@ -171,11 +173,11 @@ public class NumbersTest {
             Number a = lowest;
             Number b = highest;
             for (int i=0; i < 100; ++i) {
-                a = type.add(a, 1);
-                b = type.subtract(b, 1);
+                a = type.add(type.coerce(a), type.getOne());
+                b = type.subtract(type.coerce(b), type.getOne());
 
-                BigInteger aDiff = NumberType.BIG_INT.subtract(a, lowest);
-                BigInteger bDiff = NumberType.BIG_INT.subtract(highest, b);
+                BigInteger aDiff = bigIntType.subtract(bigIntType.coerce(a), bigIntType.coerce(lowest));
+                BigInteger bDiff = bigIntType.subtract(bigIntType.coerce(highest), bigIntType.coerce(b));
 
                 assertEquals(aDiff, i + 1);
                 assertEquals(bDiff, i + 1);
@@ -186,27 +188,27 @@ public class NumbersTest {
     @Test
     public void testUnsupportedNumberTypes() {
         assertFails(() -> {
-            NumberType.get(new DoubleAccumulator((a, b) -> a + b, 0));
+            NumberTypes.get(new DoubleAccumulator((a, b) -> a + b, 0));
         });
 
         assertFails(() -> {
-            NumberType.get(new LongAccumulator((a, b) -> a + b, 0));
+            NumberTypes.get(new LongAccumulator((a, b) -> a + b, 0));
         });
 
         assertFails(() -> {
-            NumberType.get(new DoubleAdder());
+            NumberTypes.get(new DoubleAdder());
         });
 
         assertFails(() -> {
-            NumberType.get(new LongAdder());
+            NumberTypes.get(new LongAdder());
         });
 
         assertFails(() -> {
-            NumberType.get(new AtomicInteger());
+            NumberTypes.get(new AtomicInteger());
         });
 
         assertFails(() -> {
-            NumberType.get(new AtomicLong());
+            NumberTypes.get(new AtomicLong());
         });
     }
 
@@ -260,7 +262,7 @@ public class NumbersTest {
 
     private static List<Number> coerceToAllCompatible(Number value) {
         List<Number> numbers = new ArrayList<>();
-        for (NumberType<?> type : NumberType.getAllCompatible(value)) {
+        for (NumberType<?> type : NumberTypes.getAllCompatible(value)) {
             numbers.add(type.coerce(value));
         }
         return numbers;
@@ -452,7 +454,7 @@ public class NumbersTest {
             assertEquals(abs2, Numbers.absolute(abs2));
         }
 
-        for (NumberType<?> type : NumberType.ALL) {
+        for (NumberType<?> type : NumberTypes.ALL) {
             if (type.getMinValue() == null || type.getMaxValue() == null)
                 continue;
 
@@ -463,4 +465,6 @@ public class NumbersTest {
             assertEquals(type.getMaxValue(), Numbers.absolute(type.getMaxValue()));
         }
     }
+
+    // TODO : Tests for GCD and LCM as well as other methods added
 }

@@ -1,6 +1,6 @@
 package net.paddyl.constraints.set;
 
-import net.paddyl.util.NumberType;
+import net.paddyl.util.NumberTypes;
 
 /**
  * Inclusive range of ints.
@@ -11,7 +11,7 @@ public class IntRange extends NumberRange<IntRange, Integer> {
     public static final IntRange ALL = new IntRange(Integer.MIN_VALUE, Integer.MAX_VALUE, null);
 
     public IntRange(Integer min, Integer max, Integer step) {
-        super(NumberType.INT, min, max, step);
+        super(NumberTypes.INT, min, max, step);
     }
 
     /**
@@ -20,7 +20,7 @@ public class IntRange extends NumberRange<IntRange, Integer> {
     public static class IntRangeFactory extends NumberRangeFactory<IntRange, Integer> {
 
         public IntRangeFactory() {
-            super(NumberType.INT, IntRange.class);
+            super(NumberTypes.INT, IntRange.class);
         }
 
         @Override

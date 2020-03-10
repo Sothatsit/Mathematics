@@ -1,6 +1,6 @@
 package net.paddyl.constraints.set;
 
-import net.paddyl.util.NumberType;
+import net.paddyl.util.NumberTypes;
 
 /**
  * Inclusive range of bytes.
@@ -11,7 +11,7 @@ public class ByteRange extends NumberRange<ByteRange, Byte> {
     public static final ByteRange ALL = new ByteRange(Byte.MIN_VALUE, Byte.MAX_VALUE, null);
 
     public ByteRange(Byte min, Byte max, Byte step) {
-        super(NumberType.BYTE, min, max, step);
+        super(NumberTypes.BYTE, min, max, step);
     }
 
     /**
@@ -20,7 +20,7 @@ public class ByteRange extends NumberRange<ByteRange, Byte> {
     public static class ByteRangeFactory extends NumberRangeFactory<ByteRange, Byte> {
 
         public ByteRangeFactory() {
-            super(NumberType.BYTE, ByteRange.class);
+            super(NumberTypes.BYTE, ByteRange.class);
         }
 
         @Override
