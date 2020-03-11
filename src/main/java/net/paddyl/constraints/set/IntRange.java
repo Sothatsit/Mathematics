@@ -24,7 +24,7 @@ public class IntRange extends NumberRange<IntRange, Integer> {
         }
 
         @Override
-        public IntRange createRange(Integer min, Integer max, Integer step) {
+        public IntRange steppedRange(Integer min, Integer max, Integer step) {
             return new IntRange(min, max, step);
         }
 

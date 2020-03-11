@@ -24,7 +24,7 @@ public class LongRange extends NumberRange<LongRange, Long> {
         }
 
         @Override
-        public LongRange createRange(Long min, Long max, Long step) {
+        public LongRange steppedRange(Long min, Long max, Long step) {
             return new LongRange(min, max, step);
         }
 

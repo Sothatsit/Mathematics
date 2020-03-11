@@ -47,6 +47,10 @@ public class NumberRangeTestBase {
         return factory.range(coerce(from), coerce(to));
     }
 
+    public ValueSet of(Number from, Number to, Number step) {
+        return factory.steppedRange(coerce(from), coerce(to), coerce(step));
+    }
+
     public ValueSet above(Number value) {
         return factory.aboveIncl(coerce(value));
     }
@@ -108,5 +112,9 @@ public class NumberRangeTestBase {
 
     public ConstOperator<?, ?> div(Number value) {
         return factory.div(coerce(value));
+    }
+
+    public ConstOperator<?, ?> chain(ConstOperator... operators) {
+        return factory.chain(operators);
     }
 }

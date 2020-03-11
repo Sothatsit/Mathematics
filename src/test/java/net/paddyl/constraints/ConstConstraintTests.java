@@ -220,6 +220,11 @@ public class ConstConstraintTests extends NumberRangeTestBase {
             assertEquals(of(6, 10), constraint.bruteReduce(of(-10, 10)));
         }
 
+        { // (x / 2) * 2 >= 3
+            ConstConstraint constraint = domain(chain(div(2), mul(2)), gte(3));
+            assertEquals(of(4, 10), constraint.bruteReduce(of(-10, 10)));
+        }
+
         { // x - 1 <= 3
             ConstConstraint constraint = domain(sub1, lte(3));
             assertEquals(of(MIN_P1, 4), constraint.bruteReduce(ALL));

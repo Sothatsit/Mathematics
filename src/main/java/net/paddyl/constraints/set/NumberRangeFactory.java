@@ -18,39 +18,28 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
         this.type = type;
     }
 
-    public abstract R createRange(N min, N max, N step);
-
-    public R createRange(N min, N max) {
-        return createRange(min, max, null);
-    }
-
-    @Override
-    public R range(N from, N to) {
-        return createRange(from, to);
-    }
-
     @Override
     public R below(N maxExclusive) {
         if (type.eq(maxExclusive, type.minValue))
             return empty();
-        return createRange(type.minValue, type.subtract(maxExclusive, type.one));
+        return range(type.minValue, type.subtract(maxExclusive, type.one));
     }
 
     @Override
     public R belowIncl(N max) {
-        return createRange(type.minValue, max);
+        return range(type.minValue, max);
     }
 
     @Override
     public R above(N minExclusive) {
         if (type.eq(minExclusive, type.maxValue))
             return empty();
-        return createRange(type.add(minExclusive, type.one), type.maxValue);
+        return range(type.add(minExclusive, type.one), type.maxValue);
     }
 
     @Override
     public R aboveIncl(N min) {
-        return createRange(min, type.maxValue);
+        return range(min, type.maxValue);
     }
 
     @Override
@@ -64,7 +53,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
         N overallMax = type.max(one.max, two.max);
 
         if (one.step == null && two.step == null)
-            return createRange(overallMin, overallMax);
+            return range(overallMin, overallMax);
 
         // TODO : We can do better for ranges with steps
         // Or if we're given two single values, we can create
@@ -72,7 +61,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
 
         N step = type.gcd(one.stepOr1, two.stepOr1);
 
-        return createRange(overallMin, overallMax);
+        return range(overallMin, overallMax);
     }
 
     @Override
@@ -85,7 +74,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
         N naiveMax = type.min(one.max, two.max);
 
         if (one.step == null && two.step == null)
-            return createRange(naiveMin, naiveMax);
+            return range(naiveMin, naiveMax);
 
         // Check that the two steps are compatible
         N gcd = type.gcd(one.stepOr1, two.stepOr1);
@@ -97,21 +86,21 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
         N newStep = type.lcm(one.stepOr1, two.stepOr1);
         if (type.lte(newStep, type.zero)) {
             // The LCM overflowed
-            return createRange(naiveMin, naiveMax);
+            return range(naiveMin, naiveMax);
         }
 
         // The smallest number above two.min that is potentially included in both one and two
         N offsetLCM = type.offsetLCM(one.stepOr1, two.stepOr1, oneAdvantage);
         if (type.lt(offsetLCM, type.zero)) {
             // The offsetLCM Overflowed
-            return createRange(naiveMin, naiveMax);
+            return range(naiveMin, naiveMax);
         }
 
         // Find the smallest number that is included in both sets
         N newMin = type.add(two.min, offsetLCM);
         if (type.gte(two.min, type.zero) && type.lte(newMin, type.zero)) {
             // Add overflowed
-            return createRange(naiveMin, naiveMax);
+            return range(naiveMin, naiveMax);
         }
 
         N newLength = type.div(type.subtract(naiveMax, newMin), newStep);
@@ -119,7 +108,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
             return empty();
 
         N newMax = type.add(newMin, type.mul(newLength, newStep));
-        return createRange(newMin, newMax, newStep);
+        return this.steppedRange(newMin, newMax, newStep);
     }
 
     @Override
@@ -151,7 +140,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
         if (type.compare(newMax, type.zero) != type.compare(type.zero, range.min))
             return all();
 
-        return createRange(newMin, newMax, range.stepOr1);
+        return this.steppedRange(newMin, newMax, range.stepOr1);
     }
 
     @Override
@@ -174,7 +163,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
                 return all();
         }
 
-        return createRange(type.add(range.min, shift), type.add(range.max, shift), range.stepOr1);
+        return this.steppedRange(type.add(range.min, shift), type.add(range.max, shift), range.stepOr1);
     }
 
     @Override
@@ -213,20 +202,27 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
         N newMin = type.mul(range.min, multiplicand);
         N newMax = type.mul(range.max, multiplicand);
         N newStep = type.mul(range.stepOr1, multiplicand);
-        return createRange(newMin, newMax, newStep);
+        return this.steppedRange(newMin, newMax, newStep);
     }
 
     @Override
     public R reverseMultiply(R range, N multiplicand) {
-        // If the min, max, and step aren't all a multiple of range, there's not much we can do...
-        if (!type.eq(type.zero, type.positiveRemainder(range.stepOr1, multiplicand)))
-            return all();
+        if (range.isEmpty())
+            return empty();
 
-        // Inverse scaling
+        // If the min, max, and step aren't all a multiple of range, there's not much we can do...
+        if (!range.isSingleValue()) {
+            if (!type.isMultiple(range.stepOr1, multiplicand)
+                    || !type.isMultiple(range.min, multiplicand)
+                    || !type.isMultiple(range.max, multiplicand))
+                return all();
+        }
+
         N newMin = type.div(range.min, multiplicand);
         N newMax = type.div(range.max, multiplicand);
-        N newStep = type.div(range.stepOr1, multiplicand);
-        return createRange(newMin, newMax, newStep);
+        N newStep = (range.step != null ? type.div(range.step, multiplicand) : null);
+
+        return steppedRange(newMin, newMax, newStep);
     }
 
     @Override
@@ -241,7 +237,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
                 if (type.minValue == null || !type.eq(divisor, type.minValue))
                     throw new IllegalStateException("negation overflow while divisor not equal to the minimum value");
 
-                return range.contains(type.minValue) ? createRange(type.zero, type.one) : single(type.zero);
+                return range.contains(type.minValue) ? range(type.zero, type.one) : single(type.zero);
             }
         }
 
@@ -255,7 +251,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
             newStep = type.one;
         }
 
-        return createRange(newMin, newMax, newStep);
+        return this.steppedRange(newMin, newMax, newStep);
     }
 
     @Override
@@ -270,7 +266,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
                 if (type.minValue == null || !type.eq(divisor, type.minValue))
                     throw new IllegalStateException("negation overflow while divisor not equal to the minimum value");
 
-                return range.contains(type.minValue) ? createRange(type.zero, type.one) : single(type.zero);
+                return range.contains(type.minValue) ? range(type.zero, type.one) : single(type.zero);
             }
         }
 
@@ -300,7 +296,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
             N extension = type.subtract(divisor, type.one);
 
             // Extend min
-            if (type.lt(newMin, type.zero)) {
+            if (type.lte(newMin, type.zero)) {
                 N extendedMin = type.subtract(newMin, extension);
                 if (type.gt(extendedMin, type.zero)) {
                     extendedMin = type.minValue;
@@ -309,7 +305,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
             }
 
             // Extend max
-            if (type.gt(newMax, type.zero)) {
+            if (type.gte(newMax, type.zero)) {
                 N extendedMax = type.add(newMax, extension);
                 if (type.lt(extendedMax, type.zero)) {
                     extendedMax = type.maxValue;
@@ -318,6 +314,6 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
             }
         }
 
-        return createRange(newMin, newMax, newStep);
+        return this.steppedRange(newMin, newMax, newStep);
     }
 }

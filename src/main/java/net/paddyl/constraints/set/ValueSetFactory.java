@@ -1,6 +1,7 @@
 package net.paddyl.constraints.set;
 
 import net.paddyl.constraints.*;
+import net.paddyl.util.Cast;
 
 import java.lang.reflect.Array;
 
@@ -65,7 +66,16 @@ public abstract class ValueSetFactory<S extends ValueSet<S, V>, V> {
     /**
      * @return a set including all values from {@param from} to {@param to} inclusive.
      */
-    public abstract S range(V from, V to);
+    public S range(V from, V to) {
+        return steppedRange(from, to, null);
+    }
+
+    /**
+     * If {@param step} is null, it indicates no step is to be used.
+     *
+     * @return a set including every {@param step}'th value from {@param from} to {@param to} inclusive.
+     */
+    public abstract S steppedRange(V from, V to, V step);
 
     /**
      * @return a set including all values less than {@param maxExclusive}.
@@ -211,5 +221,15 @@ public abstract class ValueSetFactory<S extends ValueSet<S, V>, V> {
      */
     public ConstOperator<S, V> div(V value) {
         return new ArithmeticConstOperator.DivConstOperator<>(this, value);
+    }
+
+    /**
+     * All of {@param operators} must be parameterized in the same way as this ValueSetFactory.
+     *
+     * @return an operator that applies each of {@param operators} in order.
+     */
+    public ConstOperator<S, V> chain(ConstOperator... operators) {
+        ConstOperator<S, V>[] castOperators = Cast.cast(operators);
+        return new ChainedConstOperator<>(castOperators);
     }
 }

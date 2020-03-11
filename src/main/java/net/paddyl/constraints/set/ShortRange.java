@@ -24,7 +24,7 @@ public class ShortRange extends NumberRange<ShortRange, Short> {
         }
 
         @Override
-        public ShortRange createRange(Short min, Short max, Short step) {
+        public ShortRange steppedRange(Short min, Short max, Short step) {
             return new ShortRange(min, max, step);
         }
 

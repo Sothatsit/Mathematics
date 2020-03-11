@@ -24,7 +24,7 @@ public class ByteRange extends NumberRange<ByteRange, Byte> {
         }
 
         @Override
-        public ByteRange createRange(Byte min, Byte max, Byte step) {
+        public ByteRange steppedRange(Byte min, Byte max, Byte step) {
             return new ByteRange(min, max, step);
         }
 
