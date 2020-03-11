@@ -105,7 +105,7 @@ public abstract class ValueSetFactory<S extends ValueSet<S, V>, V> {
     /**
      * @return {@param set} shifted by {@param shift}.
      */
-    public abstract S shift(S set, V shift);
+    public abstract S add(S set, V shift);
 
     /**
      * @return the negation of all values in {@param set}
@@ -113,16 +113,28 @@ public abstract class ValueSetFactory<S extends ValueSet<S, V>, V> {
     public abstract S negate(S set);
 
     /**
-     * @return {@param set} scaled by {@param scale}.
+     * @return {@param set} multiplied by {@param multiply}.
      */
-    public abstract S scale(S set, V scale);
+    public abstract S multiply(S set, V multiplicand);
 
     /**
-     * Performs the inverse operation to {@link #scale(ValueSet, Object)}.
+     * Performs the inverse operation to {@link #multiply(ValueSet, Object)}.
      *
-     * @return the possible set of values that could have resulted in {@param set} when scaled by {@param scale}.
+     * @return the possible set of values that could have resulted in {@param set} when multiplied by {@param multiplicand}.
      */
-    public abstract S unscale(S set, V scale);
+    public abstract S reverseMultiply(S set, V multiplicand);
+
+    /**
+     * @return {@param set} divided by {@param divisor}.
+     */
+    public abstract S divide(S set, V divisor);
+
+    /**
+     * Performs the inverse operation to {@link #divide(ValueSet, Object)}.
+     *
+     * @return the possible set of values that could have resulted in {@param set} when divided by {@param divisor}.
+     */
+    public abstract S reverseDivide(S set, V divisor);
 
     /**
      * Greater than equals. range >= value.
@@ -192,5 +204,12 @@ public abstract class ValueSetFactory<S extends ValueSet<S, V>, V> {
      */
     public ConstOperator<S, V> mul(V value) {
         return new ArithmeticConstOperator.MulConstOperator<>(this, value);
+    }
+
+    /**
+     * @return an operator that divides by {@param value}.
+     */
+    public ConstOperator<S, V> div(V value) {
+        return new ArithmeticConstOperator.DivConstOperator<>(this, value);
     }
 }

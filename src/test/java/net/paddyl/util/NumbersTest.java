@@ -154,7 +154,7 @@ public class NumbersTest {
 
     /**
      * Makes sure that no NumberType loses precision for all
-     * integers within its {@link NumberType#getIntegerBits()}.
+     * integers within its {@link NumberType#integerBitCount}.
      */
     @Test
     @SuppressWarnings("unchecked")
@@ -163,18 +163,18 @@ public class NumbersTest {
         NumberType<BigInteger> bigIntType = NumberTypes.BIG_INT;
 
         for (NumberType type : NumberTypes.ALL) {
-            if (type.getIntegerBits() == Integer.MAX_VALUE)
+            if (type.integerBitCount == Integer.MAX_VALUE)
                 continue;
 
-            BigInteger twoPow = two.pow(type.getIntegerBits() - 1);
+            BigInteger twoPow = two.pow(type.integerBitCount - 1);
             BigInteger lowest = twoPow.multiply(BigInteger.valueOf(-1));
             BigInteger highest = twoPow.subtract(BigInteger.ONE);
 
             Number a = lowest;
             Number b = highest;
             for (int i=0; i < 100; ++i) {
-                a = type.add(type.coerce(a), type.getOne());
-                b = type.subtract(type.coerce(b), type.getOne());
+                a = type.add(type.coerce(a), type.one);
+                b = type.subtract(type.coerce(b), type.one);
 
                 BigInteger aDiff = bigIntType.subtract(bigIntType.coerce(a), bigIntType.coerce(lowest));
                 BigInteger bDiff = bigIntType.subtract(bigIntType.coerce(highest), bigIntType.coerce(b));
@@ -455,14 +455,14 @@ public class NumbersTest {
         }
 
         for (NumberType<?> type : NumberTypes.ALL) {
-            if (type.getMinValue() == null || type.getMaxValue() == null)
+            if (type.minValue == null || type.maxValue == null)
                 continue;
 
-            assertEquals(type.getMinValue(), Num.sub(0, Num.abs(type.getMinValue())));
-            assertEquals(type.getMinValue(), Numbers.subtract(0, Numbers.absolute(type.getMinValue())));
+            assertEquals(type.minValue, Num.sub(0, Num.abs(type.minValue)));
+            assertEquals(type.minValue, Numbers.subtract(0, Numbers.absolute(type.minValue)));
 
-            assertEquals(type.getMaxValue(), Num.abs(type.getMaxValue()));
-            assertEquals(type.getMaxValue(), Numbers.absolute(type.getMaxValue()));
+            assertEquals(type.maxValue, Num.abs(type.maxValue));
+            assertEquals(type.maxValue, Numbers.absolute(type.maxValue));
         }
     }
 

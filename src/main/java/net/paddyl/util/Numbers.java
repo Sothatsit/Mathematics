@@ -103,7 +103,7 @@ public class Numbers {
     private static NumberType<?> getExactAddSubtractType(Number... numbers) {
         NumberType<?> type = getDominantType(numbers);
 
-        if (type.isFloatingPoint())
+        if (type.isFloatingPoint)
             return NumberTypes.BIG_DECIMAL;
 
         NumberType<?> higherPrecision = NumberTypes.getNextHigherPrecisionType(type);
@@ -132,7 +132,7 @@ public class Numbers {
     public static Number absolute(Number value) {
         NumberType type = NumberTypes.get(value);
 
-        if (type.isInteger()) {
+        if (type.isInteger) {
             NumberType higherPrecision = NumberTypes.getNextHigherPrecisionType(type);
             type = (higherPrecision != null ? higherPrecision : type);
         }

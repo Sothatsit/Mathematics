@@ -1,28 +1,21 @@
 package net.paddyl.constraints.set;
 
+import net.paddyl.util.Checks;
 import net.paddyl.util.NumberType;
 
 /**
- * A factory for constructing and manipulating LongRanges.
+ * A factory for constructing and manipulating NumberRanges.
  */
 public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends Number> extends ValueSetFactory<R, N> {
 
     public final NumberType<N> type;
-    public final N minValue;
-    public final N maxValue;
-    public final N zero;
-    public final N one;
 
     public NumberRangeFactory(NumberType<N> type, Class<R> rangeClass) {
-        super(rangeClass, type.getBoxClass());
+        super(rangeClass, type.boxClass);
+
+        Checks.assertThat(type.isBounded, "Only bounded NumberTypes are supported");
 
         this.type = type;
-        this.minValue = type.getMinValue();
-        this.maxValue = type.getMaxValue();
-        this.zero = type.getZero();
-        this.one = type.getOne();
-        if (minValue == null || maxValue == null)
-            throw new IllegalArgumentException("types that do not have min or max values are not supported");
     }
 
     public abstract R createRange(N min, N max, N step);
@@ -38,26 +31,26 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
 
     @Override
     public R below(N maxExclusive) {
-        if (type.eq(maxExclusive, minValue))
+        if (type.eq(maxExclusive, type.minValue))
             return empty();
-        return createRange(minValue, type.subtract(maxExclusive, one));
+        return createRange(type.minValue, type.subtract(maxExclusive, type.one));
     }
 
     @Override
     public R belowIncl(N max) {
-        return createRange(minValue, max);
+        return createRange(type.minValue, max);
     }
 
     @Override
     public R above(N minExclusive) {
-        if (type.eq(minExclusive, maxValue))
+        if (type.eq(minExclusive, type.maxValue))
             return empty();
-        return createRange(type.add(minExclusive, one), maxValue);
+        return createRange(type.add(minExclusive, type.one), type.maxValue);
     }
 
     @Override
     public R aboveIncl(N min) {
-        return createRange(min, maxValue);
+        return createRange(min, type.maxValue);
     }
 
     @Override
@@ -102,27 +95,27 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
 
         // Find the new step for the resultant set
         N newStep = type.lcm(one.stepOr1, two.stepOr1);
-        if (type.lte(newStep, zero)) {
+        if (type.lte(newStep, type.zero)) {
             // The LCM overflowed
             return createRange(naiveMin, naiveMax);
         }
 
         // The smallest number above two.min that is potentially included in both one and two
         N offsetLCM = type.offsetLCM(one.stepOr1, two.stepOr1, oneAdvantage);
-        if (type.lt(offsetLCM, zero)) {
+        if (type.lt(offsetLCM, type.zero)) {
             // The offsetLCM Overflowed
             return createRange(naiveMin, naiveMax);
         }
 
         // Find the smallest number that is included in both sets
         N newMin = type.add(two.min, offsetLCM);
-        if (type.gte(two.min, zero) && type.lte(newMin, zero)) {
+        if (type.gte(two.min, type.zero) && type.lte(newMin, type.zero)) {
             // Add overflowed
             return createRange(naiveMin, naiveMax);
         }
 
         N newLength = type.div(type.subtract(naiveMax, newMin), newStep);
-        if (type.lte(newLength, zero))
+        if (type.lte(newLength, type.zero))
             return empty();
 
         N newMax = type.add(newMin, type.mul(newLength, newStep));
@@ -138,7 +131,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
             return false;
 
         // Incompatible step check
-        if (!type.eq(zero, type.positiveRemainder(one.stepOr1, two.stepOr1)))
+        if (!type.eq(type.zero, type.positiveRemainder(one.stepOr1, two.stepOr1)))
             return false;
 
         // Check that steps are not offset from one another
@@ -153,28 +146,28 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
         N newMax = type.negate(range.min);
 
         // Check for overflow
-        if (type.compare(newMin, zero) != type.compare(zero, range.max))
+        if (type.compare(newMin, type.zero) != type.compare(type.zero, range.max))
             return all();
-        if (type.compare(newMax, zero) != type.compare(zero, range.min))
+        if (type.compare(newMax, type.zero) != type.compare(type.zero, range.min))
             return all();
 
         return createRange(newMin, newMax, range.stepOr1);
     }
 
     @Override
-    public R shift(R range, N shift) {
-        if (range.isEmpty() || type.eq(shift, zero))
+    public R add(R range, N shift) {
+        if (range.isEmpty() || type.eq(shift, type.zero))
             return range;
 
         // Check for overflow
-        if (type.gt(shift, zero)) {
-            N maxNoOverflow = type.subtract(maxValue, shift);
+        if (type.gt(shift, type.zero)) {
+            N maxNoOverflow = type.subtract(type.maxValue, shift);
 
             // We don't mind if both min and max overflow
             if (type.gt(range.max, maxNoOverflow) && !type.gt(range.min, maxNoOverflow))
                 return all();
         } else {
-            N minNoOverflow = type.subtract(minValue, shift);
+            N minNoOverflow = type.subtract(type.minValue, shift);
 
             // We don't mind if both min and max overflow
             if (type.lt(range.min, minNoOverflow) && !type.lt(range.max, minNoOverflow))
@@ -185,52 +178,146 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
     }
 
     @Override
-    public R scale(R range, N scale) {
+    public R multiply(R range, N multiplicand) {
         // Special case of 0
-        if (type.eq(scale, zero))
-            return single(zero);
+        if (type.eq(multiplicand, type.zero))
+            return single(type.zero);
 
-        // Canonicalize to a positive scale
-        if (type.lt(scale, zero)) {
-            scale = type.subtract(zero, scale);
+        // Canonicalize to a positive multiplicand
+        if (type.lt(multiplicand, type.zero)) {
+            multiplicand = type.negate(multiplicand);
             range = negate(range);
 
             // Check for overflow
-            if (type.lt(scale, zero))  {
-                if (!type.eq(scale, type.getMinValue()))
-                    throw new IllegalStateException("negation overflow while scale not equal to the minimum value");
+            if (type.lt(multiplicand, type.zero))  {
+                if (!type.eq(multiplicand, type.minValue))
+                    throw new IllegalStateException("negation overflow while multiplicand not equal to the minimum value");
 
-                return union(single(type.getMinValue()), single(zero));
+                return union(single(type.minValue), single(type.zero));
             }
         }
 
-        // TODO : If scale is a power of 2, we could just do a bit shift even if there is overflow.
+        // TODO : If multiplicand is a power of 2, we could just do a bit shift even if there is overflow.
 
         // Check for overflow
-        N noOverflowMin = type.div(type.getMinValue(), scale);
-        N noOverflowMax = type.div(type.getMaxValue(), scale);
-        if (type.lt(range.min, noOverflowMin) || type.gt(range.max, noOverflowMax))
-            return all();
-        if (!type.inRange(range.stepOr1, noOverflowMin, noOverflowMax))
-            return all();
+        if (type.isBounded) {
+            N noOverflowMin = type.div(type.minValue, multiplicand);
+            N noOverflowMax = type.div(type.maxValue, multiplicand);
+            if (type.lt(range.min, noOverflowMin) || type.gt(range.max, noOverflowMax))
+                return all();
+            if (!type.inRange(range.stepOr1, noOverflowMin, noOverflowMax))
+                return all();
+        }
 
         // Perform scaling
-        N newMin = type.mul(range.min, scale);
-        N newMax = type.mul(range.max, scale);
-        N newStep = type.mul(range.stepOr1, scale);
+        N newMin = type.mul(range.min, multiplicand);
+        N newMax = type.mul(range.max, multiplicand);
+        N newStep = type.mul(range.stepOr1, multiplicand);
         return createRange(newMin, newMax, newStep);
     }
 
     @Override
-    public R unscale(R range, N scale) {
+    public R reverseMultiply(R range, N multiplicand) {
         // If the min, max, and step aren't all a multiple of range, there's not much we can do...
-        if (!type.eq(zero, type.positiveRemainder(range.stepOr1, scale)))
+        if (!type.eq(type.zero, type.positiveRemainder(range.stepOr1, multiplicand)))
             return all();
 
         // Inverse scaling
-        N newMin = type.div(range.min, scale);
-        N newMax = type.div(range.max, scale);
-        N newStep = type.div(range.stepOr1, scale);
+        N newMin = type.div(range.min, multiplicand);
+        N newMax = type.div(range.max, multiplicand);
+        N newStep = type.div(range.stepOr1, multiplicand);
+        return createRange(newMin, newMax, newStep);
+    }
+
+    @Override
+    public R divide(R range, N divisor) {
+        // Canonicalize to a positive divisor
+        if (type.lt(divisor, type.zero)) {
+            divisor = type.negate(divisor);
+            range = negate(range);
+
+            // Check for overflow
+            if (type.lt(divisor, type.zero))  {
+                if (type.minValue == null || !type.eq(divisor, type.minValue))
+                    throw new IllegalStateException("negation overflow while divisor not equal to the minimum value");
+
+                return range.contains(type.minValue) ? createRange(type.zero, type.one) : single(type.zero);
+            }
+        }
+
+        N newMin = type.div(range.min, divisor);
+        N newMax = type.div(range.max, divisor);
+
+        N newStep;
+        if (type.isMultiple(range.stepOr1, divisor)) {
+            newStep = type.div(range.stepOr1, divisor);
+        } else {
+            newStep = type.one;
+        }
+
+        return createRange(newMin, newMax, newStep);
+    }
+
+    @Override
+    public R reverseDivide(R range, N divisor) {
+        // Canonicalize to a positive divisor
+        if (type.lt(divisor, type.zero)) {
+            divisor = type.negate(divisor);
+            range = negate(range);
+
+            // Check for overflow
+            if (type.lt(divisor, type.zero))  {
+                if (type.minValue == null || !type.eq(divisor, type.minValue))
+                    throw new IllegalStateException("negation overflow while divisor not equal to the minimum value");
+
+                return range.contains(type.minValue) ? createRange(type.zero, type.one) : single(type.zero);
+            }
+        }
+
+        // Check for overflow with min/max
+        if (type.isBounded) {
+            N noOverflowMin = type.div(type.minValue, divisor);
+            N noOverflowMax = type.div(type.maxValue, divisor);
+            if (type.lt(range.min, noOverflowMin) || type.gt(range.max, noOverflowMax))
+                return all();
+            if (!type.inRange(range.stepOr1, noOverflowMin, noOverflowMax))
+                return all();
+        }
+
+        N newMin = type.mul(range.min, divisor);
+        N newMax = type.mul(range.max, divisor);
+
+        // Calculate if there was an original step to uphold
+        N newStep;
+        if (range.step != null) {
+            newStep = type.mul(range.step, divisor);
+        } else {
+            newStep = type.one;
+        }
+
+        // Extend min/max to include values that would round down to range.min or range.max
+        if (range.step == null) {
+            N extension = type.subtract(divisor, type.one);
+
+            // Extend min
+            if (type.lt(newMin, type.zero)) {
+                N extendedMin = type.subtract(newMin, extension);
+                if (type.gt(extendedMin, type.zero)) {
+                    extendedMin = type.minValue;
+                }
+                newMin = extendedMin;
+            }
+
+            // Extend max
+            if (type.gt(newMax, type.zero)) {
+                N extendedMax = type.add(newMax, extension);
+                if (type.lt(extendedMax, type.zero)) {
+                    extendedMax = type.maxValue;
+                }
+                newMax = extendedMax;
+            }
+        }
+
         return createRange(newMin, newMax, newStep);
     }
 }

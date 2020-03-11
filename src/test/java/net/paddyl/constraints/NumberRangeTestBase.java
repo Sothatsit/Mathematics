@@ -25,9 +25,9 @@ public class NumberRangeTestBase {
     public NumberRangeTestBase(String numberTypeName, NumberRangeFactory factory) {
         this.numberTypeName = numberTypeName;
         this.numberType = factory.type;
-        this.MAX = numberType.getMaxValue();
-        this.MIN = numberType.getMinValue();
-        this.MIN_P1 = numberType.add(MIN, numberType.getOne());
+        this.MAX = numberType.maxValue;
+        this.MIN = numberType.minValue;
+        this.MIN_P1 = numberType.add(MIN, numberType.one);
         this.MAX_M1 = numberType.add(MAX, numberType.coerce(-1));
 
         this.factory = factory;
@@ -104,5 +104,9 @@ public class NumberRangeTestBase {
 
     public ConstOperator<?, ?> mul(Number value) {
         return factory.mul(coerce(value));
+    }
+
+    public ConstOperator<?, ?> div(Number value) {
+        return factory.div(coerce(value));
     }
 }

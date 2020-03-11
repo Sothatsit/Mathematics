@@ -31,7 +31,7 @@ public abstract class NumberRange<R extends NumberRange<R, N>, N extends Number>
         }
 
         // Canonicalize step to null when it is 1 or irrelevant
-        if (step != null && (type.eq(step, type.getOne()) || type.eq(min, max))) {
+        if (step != null && (type.eq(step, type.one) || type.eq(min, max))) {
             step = null;
         }
 
@@ -52,7 +52,7 @@ public abstract class NumberRange<R extends NumberRange<R, N>, N extends Number>
         this.min = min;
         this.max = max;
         this.step = step;
-        this.stepOr1 = (step == null ? type.getOne() : step);
+        this.stepOr1 = (step == null ? type.one : step);
 
         this.minMaxModStep = (step != null ? type.positiveRemainder(max, step) : type.coerce(0));
     }
@@ -103,8 +103,8 @@ public abstract class NumberRange<R extends NumberRange<R, N>, N extends Number>
         if (type.eq(min, max))
             return className + "{" + min + "}";
 
-        boolean minLowest = type.eq(min, type.getMinValue());
-        boolean maxHighest = type.eq(max, type.getMaxValue());
+        boolean minLowest = type.eq(min, type.minValue);
+        boolean maxHighest = type.eq(max, type.maxValue);
         String stepStr = (step == null ? "" : " (step " + step + ")");
         if (minLowest && maxHighest)
             return className + "{ALL" + stepStr + "}";

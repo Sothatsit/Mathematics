@@ -40,21 +40,24 @@ public abstract class ArithmeticConstOperator<S extends ValueSet<S, V>, V> imple
 
         @Override
         public S forward(S range) {
-            return factory.shift(range, value);
+            return factory.add(range, value);
         }
 
         @Override
         public S backward(S range) {
-            return factory.shift(range, negatedValue);
+            return factory.add(range, negatedValue);
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public String toString() {
-            return type.lt((Number) value, type.getZero()) ? "- " + negatedValue : "+ " + value;
+            return type.lt((Number) value, type.zero) ? "- " + negatedValue : "+ " + value;
         }
     }
 
+    /**
+     * range * value.
+     */
     public static class MulConstOperator<S extends ValueSet<S, V>, V> extends ArithmeticConstOperator<S, V> {
 
         private final NumberType type;
@@ -63,24 +66,56 @@ public abstract class ArithmeticConstOperator<S extends ValueSet<S, V>, V> imple
             super(factory, value);
 
             if (!(value instanceof Number))
-                throw new IllegalArgumentException("AddConstOperator only supports Number values");
+                throw new IllegalArgumentException("MulConstOperator only supports Number values");
 
             this.type = Num.type((Number) value);
         }
 
         @Override
         public S forward(S range) {
-            return factory.scale(range, value);
+            return factory.multiply(range, value);
         }
 
         @Override
         public S backward(S range) {
-            return factory.unscale(range, value);
+            return factory.reverseMultiply(range, value);
         }
 
         @Override
         public String toString() {
             return "* " + value;
+        }
+    }
+
+    /**
+     * range / value.
+     */
+    public static class DivConstOperator<S extends ValueSet<S, V>, V> extends ArithmeticConstOperator<S, V> {
+
+        private final NumberType type;
+
+        public DivConstOperator(ValueSetFactory<S, V> factory, V value) {
+            super(factory, value);
+
+            if (!(value instanceof Number))
+                throw new IllegalArgumentException("DivConstOperator only supports Number values");
+
+            this.type = Num.type((Number) value);
+        }
+
+        @Override
+        public S forward(S range) {
+            return factory.divide(range, value);
+        }
+
+        @Override
+        public S backward(S range) {
+            return factory.reverseDivide(range, value);
+        }
+
+        @Override
+        public String toString() {
+            return "/ " + value;
         }
     }
 }

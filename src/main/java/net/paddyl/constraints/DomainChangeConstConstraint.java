@@ -25,7 +25,13 @@ public class DomainChangeConstConstraint<S extends ValueSet<S, V>, V> implements
 
     @Override
     public S tryReduce(S range) {
+        // Apply the constraint in the operator domain
         S result = operator.backward(constraint.tryReduce(operator.forward(range)));
+
+        // The forwards and backwards of an operation can lose information,
+        // but we know it should never increase the bounds of the range.
+        // Therefore, we take the intersection of the original range and
+        // the result to ensure this constraint.
         return factory.intersection(range, result);
     }
 }

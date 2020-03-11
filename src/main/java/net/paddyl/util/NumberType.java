@@ -8,26 +8,76 @@ import java.math.BigInteger;
  */
 public abstract class NumberType<T extends Number> {
 
-    protected final Class<?> primitiveClass;
-    protected final Class<T> boxClass;
-    protected final int byteCount;
-    protected final boolean floatingPoint;
-    protected final int integerBitCount;
-    protected final T minValue;
-    protected final T maxValue;
-    protected final T zero;
-    protected final T one;
+    /**
+     * The primitive class for this number type (e.g. int for Integer),
+     * or null if this number type does not have a primitive equivalent.
+     */
+    public final Class<?> primitiveClass;
+
+    /**
+     * The Number sub-class that stores values of this number type.
+     */
+    public final Class<T> boxClass;
+
+    /**
+     * The maximum byte count stored by a value in this number type.
+     */
+    public final int byteCount;
+
+    /**
+     * Whether this NumberType represents a floating Foint type.
+     */
+    public final boolean isFloatingPoint;
+
+    /**
+     * Whether this NumberType represents an integer type.
+     */
+    public final boolean isInteger;
+
+    /**
+     * The maximum number of integer bits that can be represented
+     * without loss by this number type, including the sign bit.
+     */
+    public final int integerBitCount;
+
+    /**
+     * The largest magnitude negative value that can be represented by this
+     * number type, or null for types that do not have a minimum value.
+     */
+    public final T minValue;
+
+    /**
+     * The largest magnitude positive value that can be represented by this
+     * number type, or null for types that do not have a maximum value.
+     */
+    public final T maxValue;
+
+    /**
+     * Whether this NumberType has a minimum and a maximum value.
+     */
+    public final boolean isBounded;
+
+    /**
+     * The number zero in this number type.
+     */
+    public final T zero;
+
+    /**
+     * The number one in this number type.
+     */
+    public final T one;
 
     private NumberType(
             Class<?> primitiveClass,
             Class<T> boxClass,
             int byteCount,
-            boolean floatingPoint,
+            boolean isFloatingPoint,
             int integerBitCount,
             T minValue,
             T maxValue) {
 
         Checks.assertNonNull(boxClass, "boxClass");
+        Checks.assertThat((minValue == null) == (maxValue == null), "must have both a min and a max value, or neither");
 
         // Can't use assertPositive, as it uses NumberType
         Checks.assertThat(byteCount > 0, "byteCount must be greater than 0");
@@ -36,86 +86,14 @@ public abstract class NumberType<T extends Number> {
         this.primitiveClass = primitiveClass;
         this.boxClass = boxClass;
         this.byteCount = byteCount;
-        this.floatingPoint = floatingPoint;
+        this.isFloatingPoint = isFloatingPoint;
+        this.isInteger = !isFloatingPoint;
         this.integerBitCount = integerBitCount;
         this.minValue = minValue;
         this.maxValue = maxValue;
+        this.isBounded = (minValue != null && maxValue != null);
         this.zero = coerce(0);
         this.one = coerce(1);
-    }
-
-    /**
-     * @return the primitive class for this number type (e.g. int for Integer),
-     *         or null if this number type does not have a primitive equivalent.
-     */
-    public Class<?> getPrimitiveClass() {
-        return primitiveClass;
-    }
-
-    /**
-     * @return the Number sub-class that stores values of this number type.
-     */
-    public Class<T> getBoxClass() {
-        return boxClass;
-    }
-
-    /**
-     * @return the maximum byte count stored by a value in this number type.
-     */
-    public int getByteCount() {
-        return byteCount;
-    }
-
-    /**
-     * @return whether this number type is an integer type.
-     */
-    public boolean isInteger() {
-        return !floatingPoint;
-    }
-
-    /**
-     * @return whether this number type is a floating point type.
-     */
-    public boolean isFloatingPoint() {
-        return floatingPoint;
-    }
-
-    /**
-     * @return The maximum number of integer bits that can be represented without
-     *         loss by this number type, including the sign bit.
-     */
-    public int getIntegerBits() {
-        return integerBitCount;
-    }
-
-    /**
-     * @return The largest magnitude negative value that can be represented by this number type.
-     *         Will return null for types that do not have a minimum value.
-     */
-    public T getMinValue() {
-        return minValue;
-    }
-
-    /**
-     * @return The largest magnitude positive value that can be represented by this number type.
-     *         Will return null for types that do not have a maximum value.
-     */
-    public T getMaxValue() {
-        return maxValue;
-    }
-
-    /**
-     * @return the value {@code 0} in this number type.
-     */
-    public T getZero() {
-        return zero;
-    }
-
-    /**
-     * @return the value {@code 1} in this number type.
-     */
-    public T getOne() {
-        return one;
     }
 
     /**

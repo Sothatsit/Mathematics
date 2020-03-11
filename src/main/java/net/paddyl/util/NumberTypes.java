@@ -34,7 +34,7 @@ public class NumberTypes {
     private static final Map<Class<? extends Number>, NumberType> BOX_TO_TYPE = new HashMap<>();
     static {
         for(NumberType<?> type : ALL) {
-            NumberType previous = BOX_TO_TYPE.put(type.getBoxClass(), type);
+            NumberType previous = BOX_TO_TYPE.put(type.boxClass, type);
             Checks.assertThat(previous == null, "duplicate NumberType entry found for data type " + type);
         }
     }
@@ -86,15 +86,15 @@ public class NumberTypes {
             NumberType<?> type = types[index];
 
             // If both integer or both floating point
-            if(dominantType.isInteger() == type.isInteger()) {
-                if(type.getByteCount() > dominantType.getByteCount()) {
+            if(dominantType.isInteger == type.isInteger) {
+                if(type.byteCount > dominantType.byteCount) {
                     dominantType = type;
                 }
                 continue;
             }
 
             // Canonicalise dominantType to the floating point, type to the integer
-            if(type.isFloatingPoint()) {
+            if(type.isFloatingPoint) {
                 NumberType swap = type;
                 type = dominantType;
                 dominantType = swap;
@@ -102,7 +102,7 @@ public class NumberTypes {
 
             // Promote dominantType to a type that can represent, if possible
             NumberType<?> next = getNextHigherPrecisionType(dominantType);
-            while (type.getIntegerBits() > dominantType.getIntegerBits() && next != null) {
+            while (type.integerBitCount > dominantType.integerBitCount && next != null) {
                 dominantType = next;
                 next = getNextHigherPrecisionType(dominantType);
             }
@@ -127,16 +127,16 @@ public class NumberTypes {
         Set<NumberType<?>> compatible = new HashSet<>();
         compatible.add(type);
 
-        if (type.isInteger()) {
+        if (type.isInteger) {
             for (NumberType<?> other : ALL) {
-                if (other.getIntegerBits() < type.getIntegerBits())
+                if (other.integerBitCount < type.integerBitCount)
                     continue;
 
                 compatible.add(other);
             }
         } else {
             for (NumberType<?> other : FLOAT_TYPES) {
-                if (other.getByteCount() < type.getByteCount())
+                if (other.byteCount < type.byteCount)
                     continue;
 
                 compatible.add(other);
@@ -153,10 +153,10 @@ public class NumberTypes {
      */
     public static NumberType<?> getNextLowerPrecisionType(NumberType<?> type) {
         NumberType<?> highestBelow = null;
-        for (NumberType<?> otherType : type.isFloatingPoint() ? FLOAT_TYPES : INTEGER_TYPES) {
-            if (otherType.getByteCount() >= type.getByteCount())
+        for (NumberType<?> otherType : type.isFloatingPoint ? FLOAT_TYPES : INTEGER_TYPES) {
+            if (otherType.byteCount >= type.byteCount)
                 continue;
-            if (highestBelow != null && otherType.getByteCount() < highestBelow.getByteCount())
+            if (highestBelow != null && otherType.byteCount < highestBelow.byteCount)
                 continue;
             highestBelow = otherType;
         }
@@ -170,10 +170,10 @@ public class NumberTypes {
      */
     public static NumberType<?> getNextHigherPrecisionType(NumberType<?> type) {
         NumberType<?> lowestAbove = null;
-        for (NumberType<?> otherType : type.isFloatingPoint() ? FLOAT_TYPES : INTEGER_TYPES) {
-            if (otherType.getByteCount() <= type.getByteCount())
+        for (NumberType<?> otherType : type.isFloatingPoint ? FLOAT_TYPES : INTEGER_TYPES) {
+            if (otherType.byteCount <= type.byteCount)
                 continue;
-            if (lowestAbove != null && otherType.getByteCount() > lowestAbove.getByteCount())
+            if (lowestAbove != null && otherType.byteCount > lowestAbove.byteCount)
                 continue;
             lowestAbove = otherType;
         }
