@@ -210,6 +210,20 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
         if (range.isEmpty())
             return empty();
 
+        // Canonicalize to a positive divisor
+        if (type.lt(multiplicand, type.zero)) {
+            multiplicand = type.negate(multiplicand);
+            range = negate(range);
+
+            // Check for overflow
+            if (type.lt(multiplicand, type.zero))  {
+                if (type.minValue == null || !type.eq(multiplicand, type.minValue))
+                    throw new IllegalStateException("negation overflow while multiplicand not equal to the minimum value");
+
+                return range.contains(type.minValue) ? range(type.zero, type.one) : single(type.zero);
+            }
+        }
+
         // If the min, max, and step aren't all a multiple of range, there's not much we can do...
         if (!range.isSingleValue()) {
             if (!type.isMultiple(range.stepOr1, multiplicand)

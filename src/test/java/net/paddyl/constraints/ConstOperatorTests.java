@@ -44,14 +44,26 @@ public class ConstOperatorTests extends NumberRangeTestBase{
                 new ArithmeticTestCase(single(1), 1)
                         .add(single(2), single(1)).mul(single(1), single(1)).div(single(1), single(1)),
 
+                new ArithmeticTestCase(single(1), -1)
+                        .add(single(0), single(1)).mul(single(-1), single(1)).div(single(-1), single(1)),
+
                 new ArithmeticTestCase(single(1), 2)
                         .add(single(3), single(1)).mul(single(2), single(1)).div(single(0), of(-1, 1)),
+
+                new ArithmeticTestCase(single(1), -2)
+                        .add(single(-1), single(1)).mul(single(-2), single(1)).div(single(0), of(-1, 1)),
 
                 new ArithmeticTestCase(of(-10, 10), 3)
                         .add(of(-7, 13), of(-10, 10)).mul(of(-30, 30, 3), of(-10, 10)).div(of(-3, 3), of(-11, 11)),
 
+                new ArithmeticTestCase(of(-10, 10), -3)
+                        .add(of(-13, 7), of(-10, 10)).mul(of(-30, 30, 3), of(-10, 10)).div(of(-3, 3), of(-11, 11)),
+
                 new ArithmeticTestCase(of(5, 10), 3)
-                        .add(of(8, 13), of(5, 10)).mul(of(15, 30, 3), of(5, 10)).div(of(1, 3), of(3, 11))
+                        .add(of(8, 13), of(5, 10)).mul(of(15, 30, 3), of(5, 10)).div(of(1, 3), of(3, 11)),
+
+                new ArithmeticTestCase(of(5, 10), -3)
+                        .add(of(2, 7), of(5, 10)).mul(of(-30, -15, 3), of(5, 10)).div(of(-3, -1), of(3, 11))
         };
         return arithmeticTestCases;
     }
