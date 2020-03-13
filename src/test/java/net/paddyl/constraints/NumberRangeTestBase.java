@@ -1,13 +1,20 @@
 package net.paddyl.constraints;
 
-import net.paddyl.constraints.set.NumberRangeFactory;
-import net.paddyl.constraints.set.ValueSet;
-import net.paddyl.constraints.set.ValueSetFactory;
+import net.paddyl.constraints.set.*;
 import net.paddyl.util.NumberType;
+import net.paddyl.util.NumberTypes;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Base class for tests that require a NumberRangeFactory.
  */
+@RunWith(Parameterized.class)
 @SuppressWarnings("unchecked")
 public class NumberRangeTestBase {
 
@@ -116,5 +123,15 @@ public class NumberRangeTestBase {
 
     public ConstOperator<?, ?> chain(ConstOperator... operators) {
         return factory.chain(operators);
+    }
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Collection<Object[]> getTestParameters() {
+        return Arrays.asList(new Object[][] {
+                { "LongRange", new LongRange.LongRangeFactory() },
+                { "IntRange", new IntRange.IntRangeFactory() },
+                { "ShortRange", new ShortRange.ShortRangeFactory() },
+                { "ByteRange", new ByteRange.ByteRangeFactory() }
+        });
     }
 }

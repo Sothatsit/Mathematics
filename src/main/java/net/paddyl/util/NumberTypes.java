@@ -18,17 +18,42 @@ public class NumberTypes {
     public static final NumberType<Double> DOUBLE = new NumberType.DoubleType();
     public static final NumberType<BigDecimal> BIG_DECIMAL = new NumberType.BigDecimalType();
 
-    public static NumberType<?>[] INTEGER_TYPES = {
-            BYTE, SHORT, INT, LONG, BIG_INT
-    };
-    public static NumberType<?>[] FLOAT_TYPES = {
+    public static final NumberType<?>[] ALL = {
+            BYTE, SHORT, INT, LONG, BIG_INT,
             FLOAT, DOUBLE, BIG_DECIMAL
     };
 
-    public static final NumberType<?>[] ALL = new NumberType[INTEGER_TYPES.length + FLOAT_TYPES.length];
+    public static NumberType<?>[] INTEGER_TYPES;
+    public static NumberType<?>[] FLOAT_TYPES;
+
+    public static NumberType<?>[] BOUNDED_INTEGER_TYPES;
+    public static NumberType<?>[] BOUNDED_FLOAT_TYPES;
+
+    public static NumberType<?>[] UNBOUNDED_INTEGER_TYPES;
+    public static NumberType<?>[] UNBOUNDED_FLOAT_TYPES;
     static {
-        System.arraycopy(INTEGER_TYPES, 0, ALL, 0, INTEGER_TYPES.length);
-        System.arraycopy(FLOAT_TYPES, 0, ALL, INTEGER_TYPES.length, FLOAT_TYPES.length);
+        List<NumberType<?>> integerTypes = new ArrayList<>();
+        List<NumberType<?>> floatTypes = new ArrayList<>();
+        List<NumberType<?>> boundedIntegerTypes = new ArrayList<>();
+        List<NumberType<?>> boundedFloatTypes = new ArrayList<>();
+        List<NumberType<?>> unboundedIntegerTypes = new ArrayList<>();
+        List<NumberType<?>> unboundedFloatTypes = new ArrayList<>();
+
+        for (NumberType<?> type : ALL) {
+            if (type.isInteger) integerTypes.add(type);
+            if (type.isFloatingPoint) floatTypes.add(type);
+            if (type.isBounded && type.isInteger) boundedIntegerTypes.add(type);
+            if (type.isBounded && type.isFloatingPoint) boundedFloatTypes.add(type);
+            if (!type.isBounded && type.isInteger) unboundedIntegerTypes.add(type);
+            if (!type.isBounded && type.isFloatingPoint) unboundedFloatTypes.add(type);
+        }
+
+        INTEGER_TYPES = integerTypes.toArray(new NumberType<?>[integerTypes.size()]);
+        FLOAT_TYPES = floatTypes.toArray(new NumberType<?>[floatTypes.size()]);
+        BOUNDED_INTEGER_TYPES = boundedIntegerTypes.toArray(new NumberType<?>[boundedIntegerTypes.size()]);
+        BOUNDED_FLOAT_TYPES = boundedFloatTypes.toArray(new NumberType<?>[boundedFloatTypes.size()]);
+        UNBOUNDED_INTEGER_TYPES = unboundedIntegerTypes.toArray(new NumberType<?>[unboundedIntegerTypes.size()]);
+        UNBOUNDED_FLOAT_TYPES = unboundedFloatTypes.toArray(new NumberType<?>[unboundedFloatTypes.size()]);
     }
 
     private static final Map<Class<? extends Number>, NumberType> BOX_TO_TYPE = new HashMap<>();

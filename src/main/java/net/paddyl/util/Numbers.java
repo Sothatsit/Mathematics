@@ -74,7 +74,7 @@ public class Numbers {
     }
 
     /**
-     * @return {@code true} if the difference between {@param one} and {@param two}
+     * @return {@code true} if the absolute difference between {@param one} and {@param two}
      *         is less than or equal to {@param epsilon}, else {@code false}.
      */
     public static boolean equal(Number one, Number two, Number epsilon) {
@@ -137,7 +137,7 @@ public class Numbers {
             type = (higherPrecision != null ? higherPrecision : type);
         }
 
-        return type.absolute(type.coerce(value));
+        return type.abs(type.coerce(value));
     }
 
     /**

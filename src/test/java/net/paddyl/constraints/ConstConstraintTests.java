@@ -4,25 +4,11 @@ import static org.junit.Assert.*;
 
 import net.paddyl.constraints.set.*;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.Collection;
 
-@RunWith(Parameterized.class)
 @SuppressWarnings("unchecked")
 public class ConstConstraintTests extends NumberRangeTestBase {
-
-    @Parameterized.Parameters(name = "{0}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "LongRange", new LongRange.LongRangeFactory() },
-                { "IntRange", new IntRange.IntRangeFactory() },
-                { "ShortRange", new ShortRange.ShortRangeFactory() },
-                { "ByteRange", new ByteRange.ByteRangeFactory() }
-        });
-    }
 
     private CompTestCase[] compTestCases = null;
     private MultiTestCase[] multiTestCases = null;

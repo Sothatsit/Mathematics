@@ -169,6 +169,20 @@ public abstract class NumberType<T extends Number> {
     }
 
     /**
+     * {@code value << bits}
+     *
+     * @return {@param value} shifted to the left by {@param bits} bits.
+     */
+    public abstract T shiftLeft(T value, T bits);
+
+    /**
+     * {@code value >> bits}
+     *
+     * @return {@param value} shifted to the right by {@param bits} bits.
+     */
+    public abstract T shiftRight(T value, T bits);
+
+    /**
      * {@code a + b}
      *
      * @return the sum of {@param a} and {@param b}.
@@ -240,7 +254,7 @@ public abstract class NumberType<T extends Number> {
     /**
      * @return the absolute value of {@param number}.
      */
-    public abstract T absolute(T number);
+    public abstract T abs(T number);
 
     /**
      * @return the minimum of {@param a} and {@param b}.
@@ -279,9 +293,8 @@ public abstract class NumberType<T extends Number> {
         if (eq(a, zero) || eq(b, zero))
             return zero;
 
-        // Take the absolute of one and two
-        a = absolute(a);
-        b = absolute(b);
+        a = abs(a);
+        b = abs(b);
 
         // Check for overflow
         if (lte(a, zero) || lte(b, zero)) {
@@ -318,8 +331,8 @@ public abstract class NumberType<T extends Number> {
             return lcm(step1, step2);
 
         // The steps should be positive
-        step1 = absolute(step1);
-        step2 = absolute(step2);
+        step1 = abs(step1);
+        step2 = abs(step2);
         if (lte(step1, zero) || lte(step2, zero)) {
             // Absolute overflowed
             return coerce(-1);
@@ -419,6 +432,16 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
+        public T shiftLeft(T value, T bits) {
+            throw new UnsupportedOperationException("floating point left shift is unsupported");
+        }
+
+        @Override
+        public T shiftRight(T value, T bits) {
+            throw new UnsupportedOperationException("floating point right shift is unsupported");
+        }
+
+        @Override
         public T gcd(T a, T b) {
             throw new UnsupportedOperationException("floating point greatest common divisor is unsupported");
         }
@@ -464,6 +487,16 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
+        public Byte shiftLeft(Byte value, Byte bits) {
+            return (byte) (value << bits);
+        }
+
+        @Override
+        public Byte shiftRight(Byte value, Byte bits) {
+            return (byte) (value >> bits);
+        }
+
+        @Override
         public Byte add(Byte a, Byte b) {
             return (byte) (a + b);
         }
@@ -489,7 +522,7 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public Byte absolute(Byte number) {
+        public Byte abs(Byte number) {
             return (byte) Math.abs(number);
         }
     }
@@ -534,6 +567,16 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
+        public Short shiftLeft(Short value, Short bits) {
+            return (short) (value << bits);
+        }
+
+        @Override
+        public Short shiftRight(Short value, Short bits) {
+            return (short) (value >> bits);
+        }
+
+        @Override
         public Short add(Short a, Short b) {
             return (short) (a + b);
         }
@@ -559,7 +602,7 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public Short absolute(Short number) {
+        public Short abs(Short number) {
             return (short) Math.abs(number);
         }
     }
@@ -604,6 +647,16 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
+        public Integer shiftLeft(Integer value, Integer bits) {
+            return value << bits;
+        }
+
+        @Override
+        public Integer shiftRight(Integer value, Integer bits) {
+            return value >> bits;
+        }
+
+        @Override
         public Integer add(Integer a, Integer b) {
             return a + b;
         }
@@ -629,7 +682,7 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public Integer absolute(Integer number) {
+        public Integer abs(Integer number) {
             return Math.abs(number);
         }
     }
@@ -674,6 +727,16 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
+        public Long shiftLeft(Long value, Long bits) {
+            return value << bits;
+        }
+
+        @Override
+        public Long shiftRight(Long value, Long bits) {
+            return value >> bits;
+        }
+
+        @Override
         public Long add(Long a, Long b) {
             return a + b;
         }
@@ -699,12 +762,15 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public Long absolute(Long number) {
+        public Long abs(Long number) {
             return Math.abs(number);
         }
     }
 
     public static final class BigIntType extends IntegerNumberType<BigInteger> {
+
+        private static final BigInteger INT_MAX_AS_BIG_INT = BigInteger.valueOf(Integer.MAX_VALUE);
+        private static final BigInteger INT_MIN_AS_BIG_INT = BigInteger.valueOf(Integer.MIN_VALUE);
 
         protected BigIntType() {
             super(
@@ -724,6 +790,25 @@ public abstract class NumberType<T extends Number> {
         @Override
         public int compare(BigInteger a, BigInteger b) {
             return a.compareTo(b);
+        }
+
+        private int verifyShiftBits(BigInteger bits) {
+            if (bits.compareTo(INT_MAX_AS_BIG_INT) > 0 || bits.compareTo(INT_MIN_AS_BIG_INT) < 0) {
+                throw new UnsupportedOperationException(
+                        "BigInteger can only shift by int-representable amounts, cannot shift by " + bits
+                );
+            }
+            return bits.intValue();
+        }
+
+        @Override
+        public BigInteger shiftLeft(BigInteger value, BigInteger bits) {
+            return value.shiftLeft(verifyShiftBits(bits));
+        }
+
+        @Override
+        public BigInteger shiftRight(BigInteger value, BigInteger bits) {
+            return value.shiftRight(verifyShiftBits(bits));
         }
 
         @Override
@@ -752,7 +837,7 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public BigInteger absolute(BigInteger number) {
+        public BigInteger abs(BigInteger number) {
             return number.abs();
         }
 
@@ -827,7 +912,7 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public Float absolute(Float number) {
+        public Float abs(Float number) {
             return Math.abs(number);
         }
     }
@@ -897,7 +982,7 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public Double absolute(Double number) {
+        public Double abs(Double number) {
             return Math.abs(number);
         }
     }
@@ -953,7 +1038,7 @@ public abstract class NumberType<T extends Number> {
         }
 
         @Override
-        public BigDecimal absolute(BigDecimal number) {
+        public BigDecimal abs(BigDecimal number) {
             return number.abs();
         }
     }

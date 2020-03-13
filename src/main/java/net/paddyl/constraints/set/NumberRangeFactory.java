@@ -108,7 +108,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
             return empty();
 
         N newMax = type.add(newMin, type.mul(newLength, newStep));
-        return this.steppedRange(newMin, newMax, newStep);
+        return steppedRange(newMin, newMax, newStep);
     }
 
     @Override
@@ -140,7 +140,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
         if (type.compare(newMax, type.zero) != type.compare(type.zero, range.min))
             return all();
 
-        return this.steppedRange(newMin, newMax, range.stepOr1);
+        return steppedRange(newMin, newMax, range.stepOr1);
     }
 
     @Override
@@ -163,7 +163,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
                 return all();
         }
 
-        return this.steppedRange(type.add(range.min, shift), type.add(range.max, shift), range.stepOr1);
+        return steppedRange(type.add(range.min, shift), type.add(range.max, shift), range.stepOr1);
     }
 
     @Override
@@ -202,7 +202,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
         N newMin = type.mul(range.min, multiplicand);
         N newMax = type.mul(range.max, multiplicand);
         N newStep = type.mul(range.stepOr1, multiplicand);
-        return this.steppedRange(newMin, newMax, newStep);
+        return steppedRange(newMin, newMax, newStep);
     }
 
     @Override
@@ -265,7 +265,7 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
             newStep = type.one;
         }
 
-        return this.steppedRange(newMin, newMax, newStep);
+        return steppedRange(newMin, newMax, newStep);
     }
 
     @Override
@@ -328,6 +328,6 @@ public abstract class NumberRangeFactory<R extends NumberRange<R, N>, N extends 
             }
         }
 
-        return this.steppedRange(newMin, newMax, newStep);
+        return steppedRange(newMin, newMax, newStep);
     }
 }
